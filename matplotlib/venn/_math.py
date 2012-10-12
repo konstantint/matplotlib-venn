@@ -68,27 +68,32 @@ def circle_line_intersection(center, r, a, b):
     t2 = (-B - np.sqrt(disc))/2.0/A
     return np.array([a + t1*s, a+t2*s])
         
-def find_distance_by_area(r, R, a):
+def find_distance_by_area(r, R, a, numeric_correction = 0.0001):
     '''
     Solves circle_intersection_area(r, R, d) == a for d numerically (analytical solution seems to be too ugly to pursue).
     Assumes that a < pi * min(r, R)**2, will fail otherwise.
     
-    >>> find_distance_by_area(1, 1, 0)
+    The numeric correction parameter is used whenever the computed distance is exactly (R - r) (i.e. one circle must be inside another).
+    In this case the result returned is (R-r+correction). This helps later when we position the circles and need to ensure they intersect.
+    
+    >>> find_distance_by_area(1, 1, 0, 0.0)
     2.0
-    >>> round(find_distance_by_area(1, 1, 3.1415), 4)
+    >>> round(find_distance_by_area(1, 1, 3.1415, 0.0), 4)
     0.0
-    >>> d = find_distance_by_area(2, 3, 4)
+    >>> d = find_distance_by_area(2, 3, 4, 0.0)
     >>> d
     3.37...
     >>> round(circle_intersection_area(2, 3, d), 10)
     4.0
+    >>> find_distance_by_area(1, 2, np.pi)
+    1.0001
     '''
     if r > R:
         r, R = R, r
     if np.abs(a) < tol:
         return float(r + R)
     if np.abs(min([r, R])**2*np.pi - a) < tol:
-        return np.abs(R - r)
+        return np.abs(R - r + numeric_correction)
     return brentq(lambda x: circle_intersection_area(r, R, x) - a, R-r, R+r)
 
 def circle_circle_intersection(C_a, r_a, C_b, r_b):
@@ -154,3 +159,26 @@ def vector_angle_in_degrees(v):
     -45.0
     '''
     return np.arctan2(v[1], v[0])*180/np.pi
+
+def normalize_by_center_of_mass(coords, radii):
+    '''
+    Given coordinates of circle centers and radii, as two arrays, 
+    returns new coordinates array, computed such that the center of mass of the
+    three circles is (0, 0).
+    
+    >>> normalize_by_center_of_mass(np.array([[0.0, 0.0], [2.0, 0.0], [1.0, 3.0]]), np.array([1.0, 1.0, 1.0]))
+    array([[-1., -1.],
+           [ 1., -1.],
+           [ 0.,  2.]])
+    >>> normalize_by_center_of_mass(np.array([[0.0, 0.0], [2.0, 0.0], [1.0, 2.0]]), np.array([1.0, 1.0, np.sqrt(2.0)]))
+    array([[-1., -1.],
+           [ 1., -1.],
+           [ 0.,  1.]])
+    '''
+    # Now find the center of mass.
+    radii = radii**2
+    sum_r = np.sum(radii)
+    if sum_r < tol:
+        return coords
+    else:
+        return coords - np.dot(radii, coords)/np.sum(radii)

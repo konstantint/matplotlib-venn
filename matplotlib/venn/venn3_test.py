@@ -24,49 +24,47 @@ def test_circle_intersection():
 def test_find_distances_by_area():
     tests = [(0.0, 0.0, 0.0, 0.0), (1.2, 1.3, 0.0, 2.5), (1.0, 1.0, pi, 0.0), (sqrt(1.0/pi), sqrt(1.0/pi), 1.0, 0.0)]
     for (r, R, a, d) in tests:
-        assert abs(find_distance_by_area(r, R, a) - d) < tol
+        assert abs(find_distance_by_area(r, R, a, 0.0) - d) < tol
     
     tests = [(1, 2, 2), (1, 2, 1.1), (2, 3, 1.5), (2, 3, 1.0), (10, 20, 10), 
              (20, 10, 10), (20, 10, 11), (0.9, 0.9, 0.0)]
     for (r, R, d) in tests:
         a = circle_intersection_area(r, R, d)
-        assert abs(find_distance_by_area(r, R, a) - d) < tol
+        assert abs(find_distance_by_area(r, R, a, 0.0) - d) < tol
 
-def test_solve_venn3_circles():
+def test_compute_venn3_areas():
     tests = []
-    for i in range(8):
-        t = [0]*8
+    for i in range(7):
+        t = [0]*7
         t[i] = 1
         tests.append(tuple(t))
-        t = [1]*8
+        t = [1]*7
         t[i] = 0
         tests.append(tuple(t))
-    tests.append(tuple(range(8)))
+    tests.append(tuple(range(7)))
     
     for t in tests:
-        (R_a, R_b, R_c, d_ab, d_ac, d_bc) = solve_venn3_circles(t)
+        (A, B, C, AB, BC, AC, ABC) = compute_venn3_areas(t)
         t = np.array(t, float)
-        if np.sum(t[1:]) > 0:
-            t = t/np.sum(t[1:])
-        (abc, Abc, aBc, ABc, abC, AbC, aBC, ABC) = t
-        assert abs(pi*R_a**2 - (Abc + ABc + AbC + ABC)) < tol
-        assert abs(pi*R_b**2 - (aBc + ABc + aBC + ABC)) < tol
-        assert abs(pi*R_c**2 - (abC + AbC + aBC + ABC)) < tol
-        assert abs(circle_intersection_area(R_a, R_b, d_ab) - (ABc + ABC)) < tol
-        assert abs(circle_intersection_area(R_a, R_c, d_ac) - (AbC + ABC)) < tol
-        assert abs(circle_intersection_area(R_c, R_b, d_bc) - (aBC + ABC)) < tol
+        t = t/np.sum(t)
+        (Abc, aBc, ABc, abC, AbC, aBC, ABC) = t
+        assert abs(A - (Abc + ABc + AbC + ABC)) < tol
+        assert abs(B - (aBc + ABc + aBC + ABC)) < tol
+        assert abs(C - (abC + AbC + aBC + ABC)) < tol
+        assert abs(AB - (ABc + ABC)) < tol
+        assert abs(AC - (AbC + ABC)) < tol
+        assert abs(BC - (aBC + ABC)) < tol
 
-def test_position_venn3_circles():
+def test_solve_venn3_circles():
     from numpy.linalg import norm
-    tests = [(1, 1, 1, 2, 2, 2), (1, 2, 3, 0, 2, 2), (1, 1, 1, 0, 0, 0), (1, 2, 1, 1, 0.5, 0.6)]
+    tests = [(2,2,2,1,1,1,0), (10, 20, 30, 0, 19, 9, 0), (1, 1, 1, 0, 0, 0, 0), (1.2, 2, 1, 1, 0.5, 0.6, 0)]
     for t in tests:
-        (R_a, R_b, R_c, d_ab, d_ac, d_bc) = t
-        coords = position_venn3_circles(*t)
-        print coords
-        assert abs(norm(coords[0] - coords[1]) - d_ab) < tol
-        assert abs(norm(coords[0] - coords[2]) - d_ac) < tol
-        assert abs(norm(coords[2] - coords[1]) - d_bc) < tol
-        assert abs(norm(R_a**2 * coords[0] + R_b**2 * coords[1] + R_c**2 * coords[2] - array([0.0, 0.0]))) < tol
+        (A,B,C,AB,BC,AC,ABC) = t
+        coords, radii = solve_venn3_circles(t)
+        assert abs(circle_intersection_area(radii[0], radii[1], norm(coords[0] - coords[1])) - AB) < tol
+        assert abs(circle_intersection_area(radii[0], radii[1], norm(coords[0] - coords[1])) - AB) < tol
+        assert abs(circle_intersection_area(radii[0], radii[1], norm(coords[0] - coords[1])) - AB) < tol
+        assert abs(norm(radii[0]**2 * coords[0] + radii[1]**2 * coords[1] + radii[2]**2 * coords[2] - array([0.0, 0.0]))) < tol
 
 
 def test_circle_circle_intersection():
@@ -115,12 +113,11 @@ def test_compute_venn3_regions():
     coords = array([[-1, 0], [1, 0], [0, -1]], float)
     radii  = [2, 2, 2]
     regions = compute_venn3_regions(coords, radii)
-    assert regions[0] is None
     
-    region_signatures = [(False, False, False), (True, False, False), (False, True, False), (True, True, False), 
+    region_signatures = [(True, False, False), (False, True, False), (True, True, False), 
                          (False, False, True),  (True, False, True), (False, True, True), (True, True, True)]
                 
-    for i in range(1, len(regions)):
+    for i in range(len(regions)):
         pts, arcs, lbl = regions[i]
         assert len(pts) == 3
         assert len(arcs) == 3

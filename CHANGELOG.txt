@@ -1,0 +1,12 @@
+Version 0.2
+-----------
+
+    - Changed parameterization of venn3 and venn3_circles (now expects 7-element vectors as arguments rather than 8-element).
+    - 2-set venn diagrams (functions venn2 and venn2_circles)
+    - Added support for non-intersecting sets ("Euler diagrams")
+    - Minor fixes here and there.
+    
+Version 0.1
+-----------
+
+    - Initial version, three-circle area-weighted venn diagrams.
