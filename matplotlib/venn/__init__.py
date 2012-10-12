@@ -4,7 +4,7 @@ Venn diagram plotting routines.
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT license.
 
 This package contains a rountine for plotting area-weighted three-circle venn diagrams.
 There are two main functions here: venn3_circles and venn3
@@ -42,13 +42,5 @@ Example:
                 ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
 '''
-from matplotlib.venn import *
-v = venn3(sets=(0, 1, 1, 1, 1, 1, 1, 1), set_labels = ('A', 'B', 'C'))
-venn3_circles(sets=(0, 1, 1, 1, 1, 1, 1, 1), linestyle='dashed')
-v.get_patch_by_id('100').set_alpha(1.0)
-v.get_patch_by_id('100').set_color('white')
-v.get_text_by_id('100').set_text('Unknown')
-
-
 from _venn3 import venn3, venn3_circles
 ___all___ = ['venn3', 'venn3_circles']

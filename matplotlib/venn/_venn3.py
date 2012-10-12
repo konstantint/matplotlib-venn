@@ -5,7 +5,7 @@ Three-circle venn plotter.
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT license.
 '''
 import numpy as np
 import warnings

@@ -5,7 +5,7 @@ Math helper functions.
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT license.
 '''
 
 from scipy.optimize import brentq

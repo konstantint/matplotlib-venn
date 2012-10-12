@@ -5,7 +5,7 @@ Setup script.
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT license.
 '''
 
 from setuptools import setup, find_packages
@@ -26,21 +26,22 @@ version = '0.1'
 
 setup(name='matplotlib-venn',
       version=version,
-      description="Methods for generating area-proportional 2- and 3-way venn diagrams.",
-      long_description="""Methods for generating area-proportional 2- and 3-way venn diagrams.""",
+      description="Functions for drawing area-proportional 3-way venn diagrams in matplotlib.",
+      long_description=open("README.rst").read(),
       classifiers=[ # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
           'Development Status :: 2 - Pre-Alpha',
           'Intended Audience :: Science/Research',
-          'License :: OSI Approved :: BSD License',
+          'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
           'Programming Language :: Python :: 2',
           'Topic :: Scientific/Engineering :: Visualization'
       ],
-      keywords='matplotlib plotting venn diagrams',
+      platforms=['Platform Independent'],
+      keywords='matplotlib plotting charts venn-diagrams',
       author='Konstantin Tretyakov',
       author_email='kt@ut.ee',
-      url='http://kt.era.ee/',
-      license='BSD',
+      url='https://github.com/konstantint/matplotlib-venn',
+      license='MIT',
       namespace_packages = ['matplotlib'],
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
@@ -48,7 +49,5 @@ setup(name='matplotlib-venn',
       install_requires=['matplotlib', 'numpy', 'scipy'],
       tests_require=['pytest'],
       cmdclass = {'test': PyTest},
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
+      entry_points=''
       )

@@ -8,7 +8,7 @@ This package contains a rountine for plotting area-weighted three-circle venn di
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT.
 
 
 Installation

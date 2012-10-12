@@ -5,7 +5,7 @@ Test module (meant to be used via py.test).
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
-Licensed under BSD.
+Licensed under MIT license.
 '''
 from numpy import array, pi, sqrt, arcsin
 from _venn3 import *
