@@ -146,7 +146,7 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     prepare_venn2_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
-        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', ls=linestyle, lw=linewidth, **kwargs)
+        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', linestyle=linestyle, linewidth=linewidth, **kwargs)
         ax.add_patch(circle)
         result.append(circle)
     return result
