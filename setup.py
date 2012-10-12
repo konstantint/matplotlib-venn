@@ -29,7 +29,7 @@ setup(name='matplotlib-venn',
       description="Functions for drawing area-proportional 3-way venn diagrams in matplotlib.",
       long_description=open("README.rst").read(),
       classifiers=[ # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 3 - Alpha',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
