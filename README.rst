@@ -8,7 +8,7 @@ Routines for plotting area-weighted two- and three-circle venn diagrams.
 Installation
 ------------
 
-The simplest way to install the package is via ````easy_install```` or ````pip````::
+The simplest way to install the package is via ``easy_install`` or ``pip``::
 
     $ easy_install matplotlib-venn
 
@@ -21,7 +21,7 @@ Usage
 -----
 The package provides four main functions: ``venn2``, ``venn2_circles``, ``venn3`` and ``venn3_circles``.
 
-The functions ``venn2`` and ``venn2_circles`` accept as their only required argument a 3-element list of ``(Ab, aB, AB)`` of subset sizes, e.g.::
+The functions ``venn2`` and ``venn2_circles`` accept as their only required argument a 3-element list ``(Ab, aB, AB)`` of subset sizes, e.g.::
 
     venn2(subsets = (3, 2, 1))
 
@@ -37,7 +37,7 @@ of colored patches, annotated with text labels.
 Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas,
 however in most cases the picture will still provide a decent indication.
 
-The functions ``venn2_circles`` and ``venn3_circles`` return the list of Circle patches that may be tuned further 
+The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further 
 to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``Venn2`` or ``Venn3`` respectively,
 which gives access to constituent patches and text elements.
 
@@ -70,3 +70,9 @@ A more elaborate example::
                 ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
 
+
+See also
+--------
+
+* Blog post: http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
+* Report issues and submit fixes at Github: https://github.com/konstantint/matplotlib-venn
