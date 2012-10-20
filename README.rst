@@ -4,6 +4,16 @@ Venn diagram plotting routines for Python/Matplotlib
 
 Routines for plotting area-weighted two- and three-circle venn diagrams.
 
+Important changes in version 0.3
+--------------------------------
+
+As the use of package name `matplotlib.venn` was causing occasional conflicts with `matplotlib`, in version 0.3, the package name was changed to `matplotlib_venn`. I.e., if in version 0.2 you had to do things like::
+
+    from matplotlib.venn import venn3
+
+now the correct way is::
+
+    from matplotlib_venn import venn3
 
 Installation
 ------------
@@ -42,20 +52,20 @@ to your liking. The functions ``venn2`` and ``venn3`` return an object of class 
 which gives access to constituent patches and text elements.
 
 Basic Example::
-    
-    from matplotlib.venn import venn2
+
+    from matplotlib_venn import venn2
     venn2(subsets = (3, 2, 1))
-    
+
 For the three-circle case::
 
-    from matplotlib.venn import venn3
+    from matplotlib_venn import venn3
     venn3(subsets = (1, 1, 1, 2, 1, 2, 2), set_labels = ('Set1', 'Set2', 'Set3'))
-    
+
 A more elaborate example::
 
     from matplotlib import pyplot as plt
     import numpy as np
-    from matplotlib.venn import venn3, venn3_circles
+    from matplotlib_venn import venn3, venn3_circles
     plt.figure(figsize=(4,4))
     v = venn3(subsets=(1, 1, 1, 1, 1, 1, 1), set_labels = ('A', 'B', 'C'))
     v.get_patch_by_id('100').set_alpha(1.0)
@@ -69,7 +79,7 @@ A more elaborate example::
     plt.annotate('Unknown set', xy=v.get_label_by_id('100').get_position() - np.array([0, 0.05]), xytext=(-70,-70), 
                 ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
-
+    plt.show()
 
 See also
 --------

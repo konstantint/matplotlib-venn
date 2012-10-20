@@ -1,3 +1,9 @@
+Version 0.3
+-----------
+
+    - Changed package name from `matplotlib.venn` to `matplotlib_venn`.
+    - Fixed up some places to comply with pep8 lint checks.
+
 Version 0.2
 -----------
 
@@ -5,7 +11,7 @@ Version 0.2
     - 2-set venn diagrams (functions venn2 and venn2_circles)
     - Added support for non-intersecting sets ("Euler diagrams")
     - Minor fixes here and there.
-    
+
 Version 0.1
 -----------
 
