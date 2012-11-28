@@ -15,7 +15,7 @@ from matplotlib.pyplot import gca
 
 from _math import *
 
-from _venn3 import make_venn3_region_patch, prepare_venn3_axes
+from _venn3 import make_venn3_region_patch, prepare_venn3_axes, mix_colors
 make_venn2_region_patch = make_venn3_region_patch
 prepare_venn2_axes = prepare_venn3_axes
 
@@ -126,7 +126,7 @@ def compute_venn2_colors(set_colors):
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
-    return (base_colors[0], base_colors[1], 0.7 * (base_colors[0] + base_colors[1]))
+    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
 
 
 def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, **kwargs):

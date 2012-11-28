@@ -1,3 +1,8 @@
+Version 0.4
+-----------
+
+    - Fixed a bug ("ValueError: to_rgba: Invalid rgba arg" when specifying lighter set colors)
+
 Version 0.3
 -----------
 

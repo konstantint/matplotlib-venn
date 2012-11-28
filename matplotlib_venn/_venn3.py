@@ -332,6 +332,26 @@ def make_venn3_region_patch(region):
     codes = [1] + [4] * (len(path) - 1)
     return PathPatch(Path(path, codes))
 
+def mix_colors(col1, col2, col3=None):
+    '''
+    Mixes two colors to compute a "mixed" color (for purposes of computing
+    colors of the intersection regions based on the colors of the sets.
+    Note that we do not simply compute averages of given colors as those seem
+    too dark for some default configurations. Thus, we lighten the combination up a bit.
+    
+    Inputs are (up to) three RGB triples of floats 0.0-1.0 given as numpy arrays.
+    
+    >>> mix_colors(np.array([1.0, 0., 0.]), np.array([1.0, 0., 0.])) # doctest: +NORMALIZE_WHITESPACE
+    array([ 1.,  0.,  0.])
+    >>> mix_colors(np.array([1.0, 1., 0.]), np.array([1.0, 0.9, 0.]), np.array([1.0, 0.8, 0.1])) # doctest: +NORMALIZE_WHITESPACE
+    array([ 1. ,  1. , 0.04])    
+    '''
+    if col3 is None:
+        mix_color = 0.7 * (col1 + col2)
+    else:
+        mix_color = 0.4 * (col1 + col2 + col3)
+    mix_color = np.min([mix_color, [1.0, 1.0, 1.0]], 0)    
+    return mix_color
 
 def compute_venn3_colors(set_colors):
     '''
@@ -343,8 +363,8 @@ def compute_venn3_colors(set_colors):
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
-    return (base_colors[0], base_colors[1], 0.7 * (base_colors[0] + base_colors[1]), base_colors[2],
-            0.7 * (base_colors[0] + base_colors[2]), 0.7 * (base_colors[1] + base_colors[2]), 0.4 * (base_colors[0] + base_colors[1] + base_colors[2]))
+    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]), base_colors[2],
+            mix_colors(base_colors[0], base_colors[2]), mix_colors(base_colors[1], base_colors[2]), mix_colors(base_colors[0], base_colors[1], base_colors[2]))
 
 
 def prepare_venn3_axes(ax, centers, radii):
