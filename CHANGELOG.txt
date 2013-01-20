@@ -1,3 +1,8 @@
+Version 0.5
+-----------
+
+    - Fixed a bug (issue 1, "unreferenced variable 's'" in venn2 and venn2_circles)
+
 Version 0.4
 -----------
 

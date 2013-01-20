@@ -2,6 +2,8 @@
 Venn diagram plotting routines.
 Setup script.
 
+Note that "python setup.py test" invokes pytest on the package. This checks both xxx_test modules and docstrings.
+
 Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
@@ -23,7 +25,7 @@ class PyTest(TestCommand):
         import pytest  # import here, cause outside the eggs aren't loaded
         pytest.main(self.test_args)
 
-version = '0.4'
+version = '0.5'
 
 setup(name='matplotlib-venn',
       version=version,

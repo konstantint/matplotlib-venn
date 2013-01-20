@@ -138,9 +138,10 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     returns a list of three Circle patches.
 
     >>> c = venn2_circles((1, 2, 3))
+    >>> c = venn2_circles({'10': 1, '01': 2, '11': 3}) # Same effect
     '''
     if isinstance(subsets, dict):
-        subsets = [s.get(t, 0) for t in ['10', '01', '11']]
+        subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     ax = gca()
@@ -197,7 +198,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     The return value is a Venn2 object, that keeps references to the Text and Patch objects used on the plot.
 
     >>> from matplotlib_venn import *
-    >>> v = venn2(subsets=(1, 1, 1), set_labels = ('A', 'B'))
+    >>> v = venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'))
     >>> c = venn2_circles(subsets=(1, 1, 1), linestyle='dashed')
     >>> v.get_patch_by_id('10').set_alpha(1.0)
     >>> v.get_patch_by_id('10').set_color('white')
@@ -205,7 +206,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     >>> v.get_label_by_id('A').set_text('Set A')
     '''
     if isinstance(subsets, dict):
-        subsets = [s.get(t, 0) for t in ['10', '01', '11']]
+        subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     if (areas[0] < tol or areas[1] < tol):
