@@ -81,6 +81,36 @@ A more elaborate example::
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
     plt.show()
 
+An example with multiple subplots (new in version 0.6)::
+
+    figure, axes = plt.subplots(2, 2)
+    venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'), ax=axes[0][0])
+    venn2_circles((1, 2, 3), ax=axes[0][1])
+    venn3(subsets=(1, 1, 1, 1, 1, 1, 1), set_labels = ('A', 'B', 'C'), ax=axes[1][0])
+    venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14}, ax=axes[1][1])
+
+Perhaps the most common use case is generating a Venn diagram given three sets of objects. To do that you will first need to
+count set sizes. Here's one possible way to do it::
+
+    # Given three sets ...
+    set1 = set(['A', 'B', 'C', 'D'])
+    set2 = set(['B', 'C', 'D', 'E'])
+    set3 = set(['C', 'D',' E', 'F', 'G'])
+
+    # Compute the union of all elements
+    union = set1.union(set2).union(set3)
+
+    # For each element compute its 'indicator' 
+    # (e.g. an indicator of 110 means element belongs to set1 and set2 but not set3)
+    indicators = ['%d%d%d' % (a in set1, a in set2, a in set3) for a in union]
+
+    # Use the standard Counter object (Python 2.7+) to count the frequency for each indicator
+    from collections import Counter
+    subsets = Counter(indicators)
+
+    # Provide the resulting dictionary as the subsets parameter to venn3:
+    venn3(subsets, ('Set1', 'Set2', 'Set3'))
+   
 See also
 --------
 
