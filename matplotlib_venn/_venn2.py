@@ -129,7 +129,7 @@ def compute_venn2_colors(set_colors):
     return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
 
 
-def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, **kwargs):
+def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the two circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
@@ -144,7 +144,9 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
-    ax = gca()
+    
+    if ax is None:
+        ax = gca()
     prepare_venn2_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
@@ -180,7 +182,7 @@ class Venn2:
             return self.subset_labels[self.id2idx[id]]
 
 
-def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0):
+def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 2-set area-weighted Venn diagram.
     The subsets parameter is either a dict or a list.
      - If it is a dict, it must map regions to their sizes.
@@ -215,7 +217,8 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     regions = compute_venn2_regions(centers, radii)
     colors = compute_venn2_colors(set_colors)
 
-    ax = gca()
+    if ax is None:
+        ax = gca()
     prepare_venn2_axes(ax, centers, radii)
     # Create and add patches and text
     patches = [make_venn2_region_patch(r) for r in regions]

@@ -383,7 +383,7 @@ def prepare_venn3_axes(ax, centers, radii):
     ax.set_axis_off()
 
 
-def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, **kwargs):
+def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the three circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
@@ -398,7 +398,9 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
     areas = compute_venn3_areas(subsets, normalize_to)
     centers, radii = solve_venn3_circles(areas)
-    ax = gca()
+    
+    if ax is None:
+        ax = gca()
     prepare_venn3_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
@@ -434,7 +436,7 @@ class Venn3:
             return self.subset_labels[self.id2idx[id]]
 
 
-def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0):
+def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 3-set area-weighted Venn diagram.
     The subsets parameter is either a dict or a list.
      - If it is a dict, it must map regions to their sizes.
@@ -470,7 +472,8 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     regions = compute_venn3_regions(centers, radii)
     colors = compute_venn3_colors(set_colors)
 
-    ax = gca()
+    if ax is None:
+        ax = gca()
     prepare_venn3_axes(ax, centers, radii)
     # Create and add patches and text
     patches = [make_venn3_region_patch(r) for r in regions]
