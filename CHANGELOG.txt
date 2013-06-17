@@ -1,3 +1,9 @@
+Version 0.6
+-----------
+
+    - Added "ax" keyword to the plotting routines to specify the axes object on which the diagram will be created.
+      Thanks goes to https://github.com/sinhrks
+
 Version 0.5
 -----------
 

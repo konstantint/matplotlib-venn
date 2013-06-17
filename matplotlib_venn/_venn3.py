@@ -387,7 +387,7 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     '''
     Plots only the three circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
-    parameters sets and normalize_to are the same as in venn3()
+    parameters ``subsets``, ``normalize_to`` and ``ax`` are the same as in venn3()
     kwargs are passed as-is to matplotlib.patches.Circle.
     returns a list of three Circle patches.
 
@@ -445,14 +445,18 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
      - If it is a list, it must have 7 elements, denoting the sizes of the regions in the following order:
        (100, 010, 110, 001, 101, 011, 111).
 
-    Set labels parameter is a list of three strings - set labels. Set it to None to disable set labels.
-    The set_colors parameter should be a list of three elements, specifying the "base colors" of the three circles.
+    ``set_labels`` parameter is a list of three strings - set labels. Set it to None to disable set labels.
+    The ``set_colors`` parameter should be a list of three elements, specifying the "base colors" of the three circles.
     The colors of circle intersections will be computed based on those.
 
-    The normalize_to parameter specifies the total (on-axes) area of the circles to be drawn. Sometimes tuning it (together
+    The ``normalize_to`` parameter specifies the total (on-axes) area of the circles to be drawn. Sometimes tuning it (together
     with the overall fiture size) may be useful to fit the text labels better.
-    The return value is a Venn3 object, that keeps references to the Text and Patch objects used on the plot.
+    The return value is a ``Venn3`` object, that keeps references to the ``Text`` and ``Patch`` objects used on the plot.
 
+    The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
+
+    >>> import matplotlib # (The first two lines prevent the doctest from falling when TCL not installed. Not really necessary in most cases)
+    >>> matplotlib.use('Agg')
     >>> from matplotlib_venn import *
     >>> v = venn3(subsets=(1, 1, 1, 1, 1, 1, 1), set_labels = ('A', 'B', 'C'))
     >>> c = venn3_circles(subsets=(1, 1, 1, 1, 1, 1, 1), linestyle='dashed')
