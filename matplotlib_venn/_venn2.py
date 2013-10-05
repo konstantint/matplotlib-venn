@@ -16,6 +16,7 @@ from matplotlib.pyplot import gca
 from _math import *
 
 from _venn3 import make_venn3_region_patch, prepare_venn3_axes, mix_colors
+
 make_venn2_region_patch = make_venn3_region_patch
 prepare_venn2_axes = prepare_venn3_axes
 
@@ -86,10 +87,12 @@ def compute_venn2_regions(centers, radii):
     >>> centers, radii = solve_venn2_circles((1, 1, 0.5))
     >>> regions = compute_venn2_regions(centers, radii)
     '''
-    intersection = circle_circle_intersection(centers[0], radii[0], centers[1], radii[1])
+    intersection = circle_circle_intersection(centers[0], radii[0], centers[1],
+                                              radii[1])
     if intersection is None:
         # Two circular regions
-        regions = [("CIRCLE", (centers[a], radii[a], True), centers[a]) for a in [0, 1]] + [None]
+        regions = [("CIRCLE", (centers[a], radii[a], True), centers[a]) for a in
+                   [0, 1]] + [None]
     else:
         # Three curved regions
         regions = []
@@ -99,10 +102,12 @@ def compute_venn2_regions(centers, radii):
             arcs = [(centers[a], radii[a], False), (centers[b], radii[b], True)]
             if centers[a][0] < centers[b][0]:
                 # We are to the left
-                label_pos_x = (centers[a][0] - radii[a] + centers[b][0] - radii[b]) / 2.0
+                label_pos_x = (centers[a][0] - radii[a] + centers[b][0] - radii[
+                    b]) / 2.0
             else:
                 # We are to the right
-                label_pos_x = (centers[a][0] + radii[a] + centers[b][0] + radii[b]) / 2.0
+                label_pos_x = (centers[a][0] + radii[a] + centers[b][0] + radii[
+                    b]) / 2.0
             label_pos = np.array([label_pos_x, centers[a][1]])
             regions.append((points, arcs, label_pos))
 
@@ -110,7 +115,8 @@ def compute_venn2_regions(centers, radii):
         (a, b) = (0, 1)
         points = np.array([intersection[a], intersection[b]])
         arcs = [(centers[a], radii[a], True), (centers[b], radii[b], True)]
-        label_pos_x = (centers[a][0] + radii[a] + centers[b][0] - radii[b]) / 2.0
+        label_pos_x = (
+                      centers[a][0] + radii[a] + centers[b][0] - radii[b]) / 2.0
         label_pos = np.array([label_pos_x, centers[a][1]])
         regions.append((points, arcs, label_pos))
     return regions
@@ -126,10 +132,12 @@ def compute_venn2_colors(set_colors):
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
-    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
+    return (
+    base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
 
 
-def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
+def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black',
+                  linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the two circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
@@ -144,13 +152,14 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
-    
+
     if ax is None:
         ax = gca()
     prepare_venn2_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
-        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', linestyle=linestyle, linewidth=linewidth, **kwargs)
+        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none',
+                        linestyle=linestyle, linewidth=linewidth, **kwargs)
         ax.add_patch(circle)
         result.append(circle)
     return result
@@ -177,12 +186,14 @@ class Venn2:
         Alternatively, if the string 'A' or 'B' is given, the label of the
         corresponding set is returned (or None).'''
         if len(id) == 1:
-            return self.set_labels[self.id2idx[id]] if self.set_labels is not None else None
+            return self.set_labels[
+                self.id2idx[id]] if self.set_labels is not None else None
         else:
             return self.subset_labels[self.id2idx[id]]
 
 
-def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None):
+def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4,
+          normalize_to=1.0, ax=None, force=False):
     '''Plots a 2-set area-weighted Venn diagram.
     The subsets parameter is either a dict or a list.
      - If it is a dict, it must map regions to their sizes.
@@ -201,6 +212,9 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
 
+    The ``force`` parameter specifies whether to force drawing of the venn,
+    even if one or more of the areas is zero.
+
     >>> import matplotlib.pyplot as p # (The first two lines prevent the doctests from falling when TCL not installed. Not really necessary in most cases)
     >>> p.switch_backend('Agg')
     
@@ -216,7 +230,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
-    if (areas[0] < tol or areas[1] < tol):
+    if (areas[0] < tol or areas[1] < tol) and not force:
         raise Exception("Both circles in the diagram must have positive areas.")
     centers, radii = solve_venn2_circles(areas)
     regions = compute_venn2_regions(centers, radii)
@@ -233,14 +247,18 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
             p.set_edgecolor('none')
             p.set_alpha(alpha)
             ax.add_patch(p)
-    texts = [ax.text(r[2][0], r[2][1], str(s), va='center', ha='center') if r is not None else None for (r, s) in zip(regions, subsets)]
+    texts = [ax.text(r[2][0], r[2][1], str(s), va='center',
+                     ha='center') if r is not None else None for (r, s) in
+             zip(regions, subsets)]
 
     # Position labels
     if set_labels is not None:
         padding = np.mean([r * 0.1 for r in radii])
         label_positions = [centers[0] + np.array([0.0, - radii[0] - padding]),
                            centers[1] + np.array([0.0, - radii[1] - padding])]
-        labels = [ax.text(pos[0], pos[1], txt, size='large', ha='right', va='top') for (pos, txt) in zip(label_positions, set_labels)]
+        labels = [
+            ax.text(pos[0], pos[1], txt, size='large', ha='right', va='top') for
+            (pos, txt) in zip(label_positions, set_labels)]
         labels[1].set_ha('left')
     else:
         labels = None
