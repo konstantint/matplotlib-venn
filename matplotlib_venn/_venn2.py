@@ -182,7 +182,8 @@ class Venn2:
             return self.subset_labels[self.id2idx[id]]
 
 
-def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None):
+def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4,
+          normalize_to=1.0, ax=None, force=False):
     '''Plots a 2-set area-weighted Venn diagram.
     The subsets parameter is either a dict or a list.
      - If it is a dict, it must map regions to their sizes.
@@ -216,7 +217,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
-    if (areas[0] < tol or areas[1] < tol):
+    if (areas[0] < tol or areas[1] < tol) and not force:
         raise Exception("Both circles in the diagram must have positive areas.")
     centers, radii = solve_venn2_circles(areas)
     regions = compute_venn2_regions(centers, radii)

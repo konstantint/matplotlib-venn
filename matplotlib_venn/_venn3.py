@@ -436,7 +436,8 @@ class Venn3:
             return self.subset_labels[self.id2idx[id]]
 
 
-def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0, ax=None):
+def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'),
+          alpha=0.4, normalize_to=1.0, ax=None, force=False):
     '''Plots a 3-set area-weighted Venn diagram.
     The subsets parameter is either a dict or a list.
      - If it is a dict, it must map regions to their sizes.
@@ -455,6 +456,9 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
 
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
 
+    The ``force`` parameter specifies whether to force drawing of the venn,
+    even if one or more of the areas is zero.
+
     >>> import matplotlib # (The first two lines prevent the doctest from falling when TCL not installed. Not really necessary in most cases)
     >>> matplotlib.use('Agg')
     >>> from matplotlib_venn import *
@@ -470,7 +474,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
 
     areas = compute_venn3_areas(subsets, normalize_to)
-    if (areas[0] < tol or areas[1] < tol or areas[2] < tol):
+    if (areas[0] < tol or areas[1] < tol or areas[2] < tol) and not force:
         raise Exception("All three circles in the diagram must have positive areas. Use venn2 or just a circle to draw diagrams with two or one circle.")
     centers, radii = solve_venn3_circles(areas)
     regions = compute_venn3_regions(centers, radii)
