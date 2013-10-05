@@ -49,8 +49,7 @@ def compute_venn3_areas(diagram_areas, normalize_to=1.0):
         A_c = areas[3] + areas[4] + areas[5] + areas[6]
 
         # Areas of the three intersections (ab, ac, bc)
-        A_ab, A_ac, A_bc = areas[2] + areas[6], areas[4] + areas[6], areas[5] +
-                                                                     areas[6]
+        A_ab, A_ac, A_bc = areas[2] + areas[6], areas[4] + areas[6], areas[5] + areas[6]
 
         return (A_a, A_b, A_c, A_ab, A_bc, A_ac, areas[6])
 
@@ -76,15 +75,13 @@ def solve_venn3_circles(venn_areas):
     array([ 0.359,  0.476,  0.453])
     '''
     (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc) = map(float, venn_areas)
-    r_a, r_b, r_c = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi), np.sqrt(
-        A_c / np.pi)
+    r_a, r_b, r_c = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi), np.sqrt(A_c / np.pi)
     intersection_areas = [A_ab, A_bc, A_ac]
     radii = np.array([r_a, r_b, r_c])
 
     # Hypothetical distances between circle centers that assure
     # that their pairwise intersection areas match the requirements.
-    dists = [find_distance_by_area(radii[i], radii[j], intersection_areas[i])
-             for (i, j) in [(0, 1), (1, 2), (2, 0)]]
+    dists = [find_distance_by_area(radii[i], radii[j], intersection_areas[i]) for (i, j) in [(0, 1), (1, 2), (2, 0)]]
 
     # How many intersections have nonzero area?
     num_nonzero = sum(np.array([A_ab, A_bc, A_ac]) > tol)
@@ -116,10 +113,8 @@ def solve_venn3_circles(venn_areas):
                 coords[middle][0] = dists[middle]
                 coords[right][0] = dists[middle] + dists[right]
                 # We want to avoid the situation where left & right still intersect
-                if coords[left][0] + radii[left] > coords[right][0] - radii[
-                    right]:
-                    mid = (coords[left][0] + radii[left] + coords[right][0] -
-                           radii[right]) / 2.0
+                if coords[left][0] + radii[left] > coords[right][0] - radii[right]:
+                    mid = (coords[left][0] + radii[left] + coords[right][0] - radii[right]) / 2.0
                     coords[left][0] = mid - radii[left] - 1e-5
                     coords[right][0] = mid + radii[right] + 1e-5
                 break
@@ -131,8 +126,7 @@ def solve_venn3_circles(venn_areas):
                 (left, right, side) = (i, (i + 1) % 3, (i + 2) % 3)
                 coords = np.zeros((3, 2))
                 coords[right][0] = dists[left]
-                coords[side][0] = dists[left] + radii[right] + radii[
-                    side] * 1.1  # Pad by 10%
+                coords[side][0] = dists[left] + radii[right] + radii[side] * 1.1  # Pad by 10%
                 break
     else:
         # All circles are non-touching. Put them all in a sequence
@@ -165,9 +159,8 @@ def position_venn3_circles_generic(radii, dists):
     (d_ab, d_bc, d_ac) = dists
     (r_a, r_b, r_c) = radii
     coords = np.array([[0, 0], [d_ab, 0], [0, 0]], float)
-    C_x = (d_ac ** 2 - d_bc ** 2 + d_ab ** 2) / 2.0 / d_ab if np.abs(
-        d_ab) > tol else 0.0
-    C_y = -np.sqrt(d_ac ** 2 - C_x ** 2)
+    C_x = (d_ac**2 - d_bc**2 + d_ab**2) / 2.0 / d_ab if np.abs(d_ab) > tol else 0.0
+    C_y = -np.sqrt(d_ac**2 - C_x**2)
     coords[2, :] = C_x, C_y
     return coords
 
@@ -192,9 +185,7 @@ def compute_venn3_regions(centers, radii):
     >>> regions = compute_venn3_regions(centers, radii)
     '''
     # First compute all pairwise circle intersections
-    intersections = [
-        circle_circle_intersection(centers[i], radii[i], centers[j], radii[j])
-        for (i, j) in [(0, 1), (1, 2), (2, 0)]]
+    intersections = [circle_circle_intersection(centers[i], radii[i], centers[j], radii[j]) for (i, j) in [(0, 1), (1, 2), (2, 0)]]
     regions = []
     # Regions [Abc, aBc, abC]
     for i in range(3):
@@ -206,56 +197,36 @@ def compute_venn3_regions(centers, radii):
                 #    or it can also be a case of bad placement
                 if np.linalg.norm(intersections[b][0] - centers[a]) < radii[a]:
                     # In the "normal" situation we use the scheme [(BA, B+), (BC, C+), (AC, A-)]
-                    points = np.array([intersections[a][1], intersections[b][0],
-                                       intersections[c][1]])
-                    arcs = [(centers[b], radii[b], True),
-                            (centers[c], radii[c], True),
-                            (centers[a], radii[a], False)]
+                    points = np.array([intersections[a][1], intersections[b][0], intersections[c][1]])
+                    arcs = [(centers[b], radii[b], True), (centers[c], radii[c], True), (centers[a], radii[a], False)]
 
                     # Ad-hoc label positioning
                     pt_a = intersections[b][0]
                     pt_b = intersections[b][1]
-                    pt_c = circle_line_intersection(centers[a], radii[a], pt_a,
-                                                    pt_b)
+                    pt_c = circle_line_intersection(centers[a], radii[a], pt_a, pt_b)
                     if pt_c is None:
-                        label_pos = circle_circle_intersection(centers[b],
-                                                               radii[b] + 0.1 *
-                                                               radii[a],
-                                                               centers[c],
-                                                               radii[c] + 0.1 *
-                                                               radii[c])[0]
+                        label_pos = circle_circle_intersection(centers[b], radii[b] + 0.1 * radii[a], centers[c], radii[c] + 0.1 * radii[c])[0]
                     else:
                         label_pos = 0.5 * (pt_c[1] + pt_a)
                 else:
                     # This is the "bad" situation (basically one disc covers two touching disks)
                     # We use the scheme [(BA, B+), (AB, A-)] if (AC is inside B) and
                     #                   [(CA, C+), (AC, A-)] otherwise
-                    if np.linalg.norm(intersections[c][0] - centers[b]) < radii[
-                        b]:
-                        points = np.array(
-                            [intersections[a][1], intersections[a][0]])
-                        arcs = [(centers[b], radii[b], True),
-                                (centers[a], radii[a], False)]
+                    if np.linalg.norm(intersections[c][0] - centers[b]) < radii[b]:
+                        points = np.array([intersections[a][1], intersections[a][0]])
+                        arcs = [(centers[b], radii[b], True), (centers[a], radii[a], False)]
                     else:
-                        points = np.array(
-                            [intersections[c][0], intersections[c][1]])
-                        arcs = [(centers[c], radii[c], True),
-                                (centers[a], radii[a], False)]
+                        points = np.array([intersections[c][0], intersections[c][1]])
+                        arcs = [(centers[c], radii[c], True), (centers[a], radii[a], False)]
                     label_pos = centers[a]
             else:
                 # .. and the two other circles do not intersect. This means we are in the "middle" of a OoO placement.
                 # The patch is then a [(AB, B-), (BA, A+), (AC, C-), (CA, A+)]
-                points = np.array([intersections[a][0], intersections[a][1],
-                                   intersections[c][1], intersections[c][0]])
-                arcs = [(centers[b], radii[b], False),
-                        (centers[a], radii[a], True),
-                        (centers[c], radii[c], False),
-                        (centers[a], radii[a], True)]
+                points = np.array([intersections[a][0], intersections[a][1], intersections[c][1], intersections[c][0]])
+                arcs = [(centers[b], radii[b], False), (centers[a], radii[a], True), (centers[c], radii[c], False), (centers[a], radii[a], True)]
                 # Label will be between the b and c circles
-                leftc, rightc = (b, c) if centers[b][0] < centers[c][0] else (
-                c, b)
-                label_x = ((centers[leftc][0] + radii[leftc]) + (
-                centers[rightc][0] - radii[rightc])) / 2.0
+                leftc, rightc = (b, c) if centers[b][0] < centers[c][0] else (c, b)
+                label_x = ((centers[leftc][0] + radii[leftc]) + (centers[rightc][0] - radii[rightc])) / 2.0
                 label_y = centers[a][1] + radii[a] / 2.0
                 label_pos = np.array([label_x, label_y])
         elif intersections[a] is None and intersections[c] is None:
@@ -269,18 +240,14 @@ def compute_venn3_regions(centers, radii):
             other_circle_intersection = a if intersections[a] is not None else c
             i1, i2 = (0, 1) if intersections[a] is not None else (1, 0)
             # The patch is a [(AX, A-), (XA, X+)]
-            points = np.array([intersections[other_circle_intersection][i1],
-                               intersections[other_circle_intersection][i2]])
-            arcs = [(centers[a], radii[a], False),
-                    (centers[other_circle], radii[other_circle], True)]
+            points = np.array([intersections[other_circle_intersection][i1], intersections[other_circle_intersection][i2]])
+            arcs = [(centers[a], radii[a], False), (centers[other_circle], radii[other_circle], True)]
             if centers[a][0] < centers[other_circle][0]:
                 # We are to the left
-                label_pos_x = (centers[a][0] - radii[a] + centers[other_circle][
-                    0] - radii[other_circle]) / 2.0
+                label_pos_x = (centers[a][0] - radii[a] + centers[other_circle][0] - radii[other_circle]) / 2.0
             else:
                 # We are to the right
-                label_pos_x = (centers[a][0] + radii[a] + centers[other_circle][
-                    0] + radii[other_circle]) / 2.0
+                label_pos_x = (centers[a][0] + radii[a] + centers[other_circle][0] + radii[other_circle]) / 2.0
             label_pos = np.array([label_pos_x, centers[a][1]])
         regions.append((points, arcs, label_pos))
 
@@ -294,16 +261,13 @@ def compute_venn3_regions(centers, radii):
             regions.append(None)
             continue
 
-        has_middle_region = np.linalg.norm(intersections[b][0] - centers[a]) <
-                            radii[a]
+        has_middle_region = np.linalg.norm(intersections[b][0] - centers[a]) < radii[a]
 
         if has_middle_region:
             # This is the "normal" situation (i.e. all three circles have a common area)
             # We then use the scheme [(CB, C+), (CA, A-), (AB, B+)]
-            points = np.array(
-                [intersections[b][1], intersections[c][0], intersections[a][0]])
-            arcs = [(centers[c], radii[c], True), (centers[a], radii[a], False),
-                    (centers[b], radii[b], True)]
+            points = np.array([intersections[b][1], intersections[c][0], intersections[a][0]])
+            arcs = [(centers[c], radii[c], True), (centers[a], radii[a], False), (centers[b], radii[b], True)]
             # Ad-hoc label positioning
             pt_a = intersections[b][1]
             dir_to_a = pt_a - centers[a]
@@ -321,27 +285,21 @@ def compute_venn3_regions(centers, radii):
 
     # Central region made by scheme [(BC, B+), (AB, A+), (CA, C+)]
     (a, b, c) = (0, 1, 2)
-    if intersections[a] is None or intersections[b] is None or intersections[
-        c] is None:
+    if intersections[a] is None or intersections[b] is None or intersections[c] is None:
         # No middle region
         regions.append(None)
     else:
-        points = np.array(
-            [intersections[b][0], intersections[a][0], intersections[c][0]])
+        points = np.array([intersections[b][0], intersections[a][0], intersections[c][0]])
         label_pos = np.mean(points, 0)  # Middle of the central region
-        arcs = [(centers[b], radii[b], True), (centers[a], radii[a], True),
-                (centers[c], radii[c], True)]
-        has_middle_region = np.linalg.norm(intersections[b][0] - centers[a]) <
-                            radii[a]
+        arcs = [(centers[b], radii[b], True), (centers[a], radii[a], True), (centers[c], radii[c], True)]
+        has_middle_region = np.linalg.norm(intersections[b][0] - centers[a]) < radii[a]
         if has_middle_region:
             regions.append((points, arcs, label_pos))
         else:
             regions.append(([], [], label_pos))
 
     #      (Abc,        aBc,        ABc,        abC,        AbC,        aBC,        ABC)
-    return (
-    regions[0], regions[1], regions[5], regions[2], regions[4], regions[3],
-    regions[6])
+    return (regions[0], regions[1], regions[5], regions[2], regions[4], regions[3], regions[6])
 
 
 def make_venn3_region_patch(region):
@@ -374,7 +332,6 @@ def make_venn3_region_patch(region):
     codes = [1] + [4] * (len(path) - 1)
     return PathPatch(Path(path, codes))
 
-
 def mix_colors(col1, col2, col3=None):
     '''
     Mixes two colors to compute a "mixed" color (for purposes of computing
@@ -393,9 +350,8 @@ def mix_colors(col1, col2, col3=None):
         mix_color = 0.7 * (col1 + col2)
     else:
         mix_color = 0.4 * (col1 + col2 + col3)
-    mix_color = np.min([mix_color, [1.0, 1.0, 1.0]], 0)
+    mix_color = np.min([mix_color, [1.0, 1.0, 1.0]], 0)    
     return mix_color
-
 
 def compute_venn3_colors(set_colors):
     '''
@@ -407,12 +363,8 @@ def compute_venn3_colors(set_colors):
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
-    return (
-    base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]),
-    base_colors[2],
-    mix_colors(base_colors[0], base_colors[2]),
-    mix_colors(base_colors[1], base_colors[2]),
-    mix_colors(base_colors[0], base_colors[1], base_colors[2]))
+    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]), base_colors[2],
+            mix_colors(base_colors[0], base_colors[2]), mix_colors(base_colors[1], base_colors[2]), mix_colors(base_colors[0], base_colors[1], base_colors[2]))
 
 
 def prepare_venn3_axes(ax, centers, radii):
@@ -431,8 +383,7 @@ def prepare_venn3_axes(ax, centers, radii):
     ax.set_axis_off()
 
 
-def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black',
-                  linestyle='solid', linewidth=2.0, ax=None, **kwargs):
+def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the three circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
@@ -444,18 +395,16 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black',
     '''
     # Prepare parameters
     if isinstance(subsets, dict):
-        subsets = [subsets.get(t, 0) for t in
-                   ['100', '010', '110', '001', '101', '011', '111']]
+        subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
     areas = compute_venn3_areas(subsets, normalize_to)
     centers, radii = solve_venn3_circles(areas)
-
+    
     if ax is None:
         ax = gca()
     prepare_venn3_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
-        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none',
-                        linestyle=linestyle, linewidth=linewidth, **kwargs)
+        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', linestyle=linestyle, linewidth=linewidth, **kwargs)
         ax.add_patch(circle)
         result.append(circle)
     return result
@@ -465,8 +414,7 @@ class Venn3:
     '''
     A container for a set of patches and patch labels and set labels, which make up the rendered venn diagram.
     '''
-    id2idx = {'100': 0, '010': 1, '110': 2, '001': 3, '101': 4, '011': 5,
-              '111': 6, 'A': 0, 'B': 1, 'C': 2}
+    id2idx = {'100': 0, '010': 1, '110': 2, '001': 3, '101': 4, '011': 5, '111': 6, 'A': 0, 'B': 1, 'C': 2}
 
     def __init__(self, patches, subset_labels, set_labels):
         self.patches = patches
@@ -483,8 +431,7 @@ class Venn3:
         Alternatively, if you provide either of 'A', 'B' or 'C', you will obtain the label of the
         corresponding set (or None).'''
         if len(id) == 1:
-            return self.set_labels[
-                self.id2idx[id]] if self.set_labels is not None else None
+            return self.set_labels[self.id2idx[id]] if self.set_labels is not None else None
         else:
             return self.subset_labels[self.id2idx[id]]
 
@@ -524,13 +471,11 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'),
     '''
     # Prepare parameters
     if isinstance(subsets, dict):
-        subsets = [subsets.get(t, 0) for t in
-                   ['100', '010', '110', '001', '101', '011', '111']]
+        subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
 
     areas = compute_venn3_areas(subsets, normalize_to)
     if (areas[0] < tol or areas[1] < tol or areas[2] < tol) and not force:
-        raise Exception(
-            "All three circles in the diagram must have positive areas. Use venn2 or just a circle to draw diagrams with two or one circle.")
+        raise Exception("All three circles in the diagram must have positive areas. Use venn2 or just a circle to draw diagrams with two or one circle.")
     centers, radii = solve_venn3_circles(areas)
     regions = compute_venn3_regions(centers, radii)
     colors = compute_venn3_colors(set_colors)
@@ -546,9 +491,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'),
             p.set_edgecolor('none')
             p.set_alpha(alpha)
             ax.add_patch(p)
-    subset_labels = [ax.text(r[2][0], r[2][1], str(s), va='center',
-                             ha='center') if r is not None else None for (r, s)
-                     in zip(regions, subsets)]
+    subset_labels = [ax.text(r[2][0], r[2][1], str(s), va='center', ha='center') if r is not None else None for (r, s) in zip(regions, subsets)]
 
     # Position labels
     if set_labels is not None:
@@ -558,8 +501,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'),
             label_positions = [centers[0] + np.array([-radii[0] / 2, radii[0]]),
                                centers[1] + np.array([radii[1] / 2, radii[1]]),
                                centers[2] + np.array([0.0, -radii[2] * 1.1])]
-            labels = [ax.text(pos[0], pos[1], txt, size='large') for (pos, txt)
-                      in zip(label_positions, set_labels)]
+            labels = [ax.text(pos[0], pos[1], txt, size='large') for (pos, txt) in zip(label_positions, set_labels)]
             labels[0].set_horizontalalignment('right')
             labels[1].set_horizontalalignment('left')
             labels[2].set_verticalalignment('top')
@@ -567,13 +509,10 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'),
         else:
             padding = np.mean([r * 0.1 for r in radii])
             # Three circles on the same line
-            label_positions = [
-                centers[0] + np.array([0.0, - radii[0] - padding]),
-                centers[1] + np.array([0.0, - radii[1] - padding]),
-                centers[2] + np.array([0.0, - radii[2] - padding])]
-            labels = [ax.text(pos[0], pos[1], txt, size='large', ha='center',
-                              va='top') for (pos, txt) in
-                      zip(label_positions, set_labels)]
+            label_positions = [centers[0] + np.array([0.0, - radii[0] - padding]),
+                               centers[1] + np.array([0.0, - radii[1] - padding]),
+                               centers[2] + np.array([0.0, - radii[2] - padding])]
+            labels = [ax.text(pos[0], pos[1], txt, size='large', ha='center', va='top') for (pos, txt) in zip(label_positions, set_labels)]
     else:
         labels = None
     return Venn3(patches, subset_labels, labels)
