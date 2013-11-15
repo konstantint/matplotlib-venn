@@ -142,6 +142,9 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     '''
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
+    elif len(subsets) == 2:  # objects are sets themselves
+        set1, set2 = subsets
+        subsets = [len(set1 - set2), len(set2 - set1), len(set1.intersection(set2))]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     
@@ -214,6 +217,9 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     '''
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
+    elif len(subsets) == 2:  # objects are sets themselves
+        set1, set2 = subsets
+        subsets = [len(set1 - set2), len(set2 - set1), len(set1.intersection(set2))]
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     if (areas[0] < tol or areas[1] < tol):
