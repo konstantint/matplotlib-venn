@@ -396,6 +396,17 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     # Prepare parameters
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
+    elif len(subsets) == 3:  # objects are sets themselves
+        set1, set2, set3 = subsets
+        subsets = [
+            len(set1 - (set2.union(set3))),
+            len(set2 - (set1.union(set3))),
+            len(set1.intersection(set2) - set3),
+            len(set3 - (set1.union(set2))),
+            len(set1.intersection(set3) - set2),
+            len(set3.intersection(set2) - set1),
+            len(set1.intersection(set2).intersection(set3))
+        ]
     areas = compute_venn3_areas(subsets, normalize_to)
     centers, radii = solve_venn3_circles(areas)
     
@@ -468,6 +479,17 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     # Prepare parameters
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
+    elif len(subsets) == 3:  # objects are sets themselves
+        set1, set2, set3 = subsets
+        subsets = [
+            len(set1 - (set2.union(set3))),
+            len(set2 - (set1.union(set3))),
+            len(set1.intersection(set2) - set3),
+            len(set3 - (set1.union(set2))),
+            len(set1.intersection(set3) - set2),
+            len(set3.intersection(set2) - set1),
+            len(set1.intersection(set2).intersection(set3))
+        ]
 
     areas = compute_venn3_areas(subsets, normalize_to)
     if (areas[0] < tol or areas[1] < tol or areas[2] < tol):
