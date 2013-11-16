@@ -383,6 +383,36 @@ def prepare_venn3_axes(ax, centers, radii):
     ax.set_axis_off()
 
 
+def compute_venn3_subsets(a, b, c):
+	'''
+	Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
+	as needed by the subsets parameter of venn3 and venn3_circles.
+	Returns the result as a tuple.
+	
+	>>> compute_venn3_subsets(set([1,2,3]), set([2,3,4]), set([3,4,5,6]))
+	(1, 0, 1, 2, 0, 1, 1)
+	>>> compute_venn3_subsets(set([]), set([]), set([]))
+	(0, 0, 0, 0, 0, 0, 0)
+	>>> compute_venn3_subsets(set([1]), set([]), set([]))
+	(1, 0, 0, 0, 0, 0, 0)
+	>>> compute_venn3_subsets(set([]), set([1]), set([]))
+	(0, 1, 0, 0, 0, 0, 0)
+	>>> compute_venn3_subsets(set([]), set([]), set([1]))
+	(0, 0, 0, 1, 0, 0, 0)
+	>>> compute_venn3_subsets(set([1]), set([1]), set([1]))
+	(0, 0, 0, 0, 0, 0, 1)
+	>>> compute_venn3_subsets(set([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
+	(1, 1, 1, 1, 1, 1, 1)
+	'''
+	return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
+            len(b - (a.union(c))),
+            len(a.intersection(b) - c),
+            len(c - (a.union(b))),
+            len(a.intersection(c) - b),
+            len(b.intersection(c) - a),
+            len(a.intersection(b).intersection(c)))
+
+
 def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the three circles for the corresponding Venn diagram.
@@ -392,21 +422,14 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     returns a list of three Circle patches.
 
     >>> plot = venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14})
+	>>> plot = venn3_circles([set(['A','B','C']), set(['A','D','E','F']), set(['D','G','H'])])
     '''
     # Prepare parameters
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
-    elif len(subsets) == 3:  # objects are sets themselves
-        set1, set2, set3 = subsets
-        subsets = [
-            len(set1 - (set2.union(set3))),
-            len(set2 - (set1.union(set3))),
-            len(set1.intersection(set2) - set3),
-            len(set3 - (set1.union(set2))),
-            len(set1.intersection(set3) - set2),
-            len(set3.intersection(set2) - set1),
-            len(set1.intersection(set2).intersection(set3))
-        ]
+    elif len(subsets) == 3:
+        subsets = compute_venn3_subsets(*subsets)
+        
     areas = compute_venn3_areas(subsets, normalize_to)
     centers, radii = solve_venn3_circles(areas)
     
@@ -427,10 +450,12 @@ class Venn3:
     '''
     id2idx = {'100': 0, '010': 1, '110': 2, '001': 3, '101': 4, '011': 5, '111': 6, 'A': 0, 'B': 1, 'C': 2}
 
-    def __init__(self, patches, subset_labels, set_labels):
+    def __init__(self, patches, subset_labels, set_labels, centers, radii):
         self.patches = patches
         self.subset_labels = subset_labels
         self.set_labels = set_labels
+        self.centers = centers
+        self.radii = radii
 
     def get_patch_by_id(self, id):
         '''Returns a patch by a "region id". A region id is a string like 001, 011, 010, etc.'''
@@ -446,14 +471,29 @@ class Venn3:
         else:
             return self.subset_labels[self.id2idx[id]]
 
+    def get_circle_center(self, id):
+        '''
+        Returns the coordinates of the center of a circle as a numpy array (x,y)
+        id must be 0 or 1 (corresponding to the first or second circle). 
+        This is a getter-only (i.e. changing this value does not affect the diagram)
+        '''
+        return self.centers[id]
+    
+    def get_circle_radius(self, id):
+        '''
+        Returns the radius of circle id (where id is 0 or 1).
+        This is a getter-only (i.e. changing this value does not affect the diagram)
+        '''
+        return self.radii[id]
 
 def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 3-set area-weighted Venn diagram.
-    The subsets parameter is either a dict or a list.
-     - If it is a dict, it must map regions to their sizes.
+    The subsets parameter can be one of the following:
+	 - A list (or a tuple), containing three set objects.
+     - A dict, providing sizes of seven diagram regions.
        The regions are identified via three-letter binary codes ('100', '010', etc), hence a valid set could look like:
        {'001': 10, '010': 20, '110':30, ...}. Unmentioned codes are considered to map to 0.
-     - If it is a list, it must have 7 elements, denoting the sizes of the regions in the following order:
+     - A list (or a tuple) with 7 numbers, denoting the sizes of the regions in the following order:
        (100, 010, 110, 001, 101, 011, 111).
 
     ``set_labels`` parameter is a list of three strings - set labels. Set it to None to disable set labels.
@@ -475,21 +515,18 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     >>> v.get_patch_by_id('100').set_color('white')
     >>> v.get_label_by_id('100').set_text('Unknown')
     >>> v.get_label_by_id('C').set_text('Set C')
+	
+	You can provide sets themselves rather than subset sizes:
+    >>> v = venn3(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
+    >>> print "%0.2f %0.2f %0.2f" % (v.get_circle_radius(0), v.get_circle_radius(1)/v.get_circle_radius(0), v.get_circle_radius(2)/v.get_circle_radius(0))
+    0.24 1.41 2.00
+    >>> c = venn3_circles(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
     '''
     # Prepare parameters
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
-    elif len(subsets) == 3:  # objects are sets themselves
-        set1, set2, set3 = subsets
-        subsets = [
-            len(set1 - (set2.union(set3))),
-            len(set2 - (set1.union(set3))),
-            len(set1.intersection(set2) - set3),
-            len(set3 - (set1.union(set2))),
-            len(set1.intersection(set3) - set2),
-            len(set3.intersection(set2) - set1),
-            len(set1.intersection(set2).intersection(set3))
-        ]
+    elif len(subsets) == 3:
+        subsets = compute_venn3_subsets(*subsets)
 
     areas = compute_venn3_areas(subsets, normalize_to)
     if (areas[0] < tol or areas[1] < tol or areas[2] < tol):
@@ -533,4 +570,4 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
             labels = [ax.text(pos[0], pos[1], txt, size='large', ha='center', va='top') for (pos, txt) in zip(label_positions, set_labels)]
     else:
         labels = None
-    return Venn3(patches, subset_labels, labels)
+    return Venn3(patches, subset_labels, labels, centers, radii)

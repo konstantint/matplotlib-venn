@@ -8,9 +8,9 @@ http://kt.era.ee/
 Licensed under MIT license.
 '''
 from numpy import array, pi, sqrt, arcsin
-from _venn2 import *
-from _venn3 import *
-from _math import *
+from matplotlib_venn._venn2 import *
+from matplotlib_venn._venn3 import *
+from matplotlib_venn._math import *
 
 def test_ax_kw():
     import matplotlib.pyplot as plt

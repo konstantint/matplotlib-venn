@@ -8,8 +8,8 @@ http://kt.era.ee/
 Licensed under MIT license.
 '''
 from numpy import array, pi, sqrt, arcsin
-from _venn3 import *
-from _math import *
+from matplotlib_venn._venn3 import *
+from matplotlib_venn._math import *
 
 def test_circle_intersection():
     f = lambda x: (sqrt(1-x**2)*x + arcsin(x))*0.5        # Integral [sqrt(1 - x^2) dx]

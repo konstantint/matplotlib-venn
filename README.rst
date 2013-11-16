@@ -4,17 +4,6 @@ Venn diagram plotting routines for Python/Matplotlib
 
 Routines for plotting area-weighted two- and three-circle venn diagrams.
 
-Important changes in version 0.3
---------------------------------
-
-As the use of package name `matplotlib.venn` was causing occasional conflicts with `matplotlib`, in version 0.3, the package name was changed to `matplotlib_venn`. I.e., if in version 0.2 you had to do things like::
-
-    from matplotlib.venn import venn3
-
-now the correct way is::
-
-    from matplotlib_venn import venn3
-
 Installation
 ------------
 
@@ -36,20 +25,19 @@ The functions ``venn2`` and ``venn2_circles`` accept as their only required argu
     venn2(subsets = (3, 2, 1))
 
 and draw a two-circle venn diagram with respective region areas. In the particular example, the region, corresponding to subset ``A and not B`` will
-be three times larger in area than the region, corresponding to subset ``A and B``.
+be three times larger in area than the region, corresponding to subset ``A and B``. Alternatively, you can simply provide a list of two ``set'' objects instead (new in version 0.7), e.g.::
 
-Similarly, the functions ``venn3`` and ``venn3_circles`` take a 7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC, ABC)``, and draw a 
-three-circle area-weighted venn diagram.
+    venn2([set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])])
 
-The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whereas the functions ``venn2`` and ``venn3`` draw the diagrams as a collection
-of colored patches, annotated with text labels.
+Similarly, the functions ``venn3`` and ``venn3_circles`` take a 7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC, ABC)``, and draw a three-circle area-weighted venn diagram. Alternatively, you can provide a list of three set objects (rather than counting sizes for all 7 subsets).
 
-Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas,
-however in most cases the picture will still provide a decent indication.
+The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whereas the functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored patches, annotated with text labels.
+
+Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas, however in most cases the picture will still provide a decent indication.
 
 The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further 
 to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``Venn2`` or ``Venn3`` respectively,
-which gives access to constituent patches and text elements.
+which gives access to constituent patches, text elements, as well as (since version 0.7) the information about the centers and radii of the circles.
 
 Basic Example::
 
@@ -89,27 +77,13 @@ An example with multiple subplots (new in version 0.6)::
     venn3(subsets=(1, 1, 1, 1, 1, 1, 1), set_labels = ('A', 'B', 'C'), ax=axes[1][0])
     venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14}, ax=axes[1][1])
 
-Perhaps the most common use case is generating a Venn diagram given three sets of objects. To do that you will first need to
-count set sizes. Here's one possible way to do it::
+Perhaps the most common use case is generating a Venn diagram given three sets of objects::
 
-    # Given three sets ...
     set1 = set(['A', 'B', 'C', 'D'])
     set2 = set(['B', 'C', 'D', 'E'])
     set3 = set(['C', 'D',' E', 'F', 'G'])
 
-    # Compute the union of all elements
-    union = set1.union(set2).union(set3)
-
-    # For each element compute its 'indicator' 
-    # (e.g. an indicator of 110 means element belongs to set1 and set2 but not set3)
-    indicators = ['%d%d%d' % (a in set1, a in set2, a in set3) for a in union]
-
-    # Use the standard Counter object (Python 2.7+) to count the frequency for each indicator
-    from collections import Counter
-    subsets = Counter(indicators)
-
-    # Provide the resulting dictionary as the subsets parameter to venn3:
-    venn3(subsets, ('Set1', 'Set2', 'Set3'))
+    venn3([set1, set2, set3], ('Set1', 'Set2', 'Set3'))
    
 See also
 --------

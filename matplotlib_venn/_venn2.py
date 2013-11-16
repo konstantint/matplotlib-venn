@@ -129,6 +129,25 @@ def compute_venn2_colors(set_colors):
     return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
 
 
+def compute_venn2_subsets(a, b):
+    '''
+    Given two set objects, computes the sizes of (a & ~b, b & ~a, a & b).
+    Returns the result as a tuple.
+    
+    >>> compute_venn2_subsets(set([1,2,3,4]), set([2,3,4,5,6]))
+    (1, 2, 3)
+    >>> compute_venn2_subsets(set([]), set([]))
+    (0, 0, 0)
+    >>> compute_venn2_subsets(set([1]), set([]))
+    (1, 0, 0)
+    >>> compute_venn2_subsets(set([1]), set([1]))
+    (0, 0, 1)
+    >>> compute_venn2_subsets(set([1,2]), set([1]))
+    (1, 0, 1)
+    '''
+    return (len(a - b), len(b - a), len(a.intersection(b)))
+
+
 def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
     '''
     Plots only the two circles for the corresponding Venn diagram.
@@ -139,12 +158,12 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
 
     >>> c = venn2_circles((1, 2, 3))
     >>> c = venn2_circles({'10': 1, '01': 2, '11': 3}) # Same effect
+    >>> c = venn2_circles([set([1,2,3,4]), set([2,3,4,5,6])]) # Also same effect
     '''
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
-    elif len(subsets) == 2:  # objects are sets themselves
-        set1, set2 = subsets
-        subsets = [len(set1 - set2), len(set2 - set1), len(set1.intersection(set2))]
+    elif len(subsets) == 2:
+        subsets = compute_venn2_subsets(*subsets)
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     
@@ -165,11 +184,13 @@ class Venn2:
     '''
     id2idx = {'10': 0, '01': 1, '11': 2, 'A': 0, 'B': 1}
 
-    def __init__(self, patches, subset_labels, set_labels):
+    def __init__(self, patches, subset_labels, set_labels, centers, radii):
         self.patches = patches
         self.subset_labels = subset_labels
         self.set_labels = set_labels
-
+        self.centers = centers
+        self.radii = radii
+        
     def get_patch_by_id(self, id):
         '''Returns a patch by a "region id". A region id is a string '10', '01' or '11'.'''
         return self.patches[self.id2idx[id]]
@@ -184,15 +205,31 @@ class Venn2:
         else:
             return self.subset_labels[self.id2idx[id]]
 
+    def get_circle_center(self, id):
+        '''
+        Returns the coordinates of the center of a circle as a numpy array (x,y)
+        id must be 0 or 1 (corresponding to the first or second circle). 
+        This is a getter-only (i.e. changing this value does not affect the diagram)
+        '''
+        return self.centers[id]
+    
+    def get_circle_radius(self, id):
+        '''
+        Returns the radius of circle id (where id is 0 or 1).
+        This is a getter-only (i.e. changing this value does not affect the diagram)
+        '''
+        return self.radii[id]
+        
 
 def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 2-set area-weighted Venn diagram.
-    The subsets parameter is either a dict or a list.
-     - If it is a dict, it must map regions to their sizes.
+    The subsets parameter can be one of the following:
+     - A list (or a tuple) containing two set objects.
+     - A dict, providing sizes of three diagram regions.
        The regions are identified via two-letter binary codes ('10', '01', and '11'), hence a valid set could look like:
        {'01': 10, '01': 20, '11': 40}. Unmentioned codes are considered to map to 0.
-     - If it is a list, it must have 3 elements, denoting the sizes of the regions in the following order:
-       (10, 10, 11)
+     - A list (or a tuple) with three numbers, denoting the sizes of the regions in the following order:
+       (10, 01, 11)
 
     ``set_labels`` parameter is a list of two strings - set labels. Set it to None to disable set labels.
     The ``set_colors`` parameter should be a list of two elements, specifying the "base colors" of the two circles.
@@ -214,12 +251,17 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     >>> v.get_patch_by_id('10').set_color('white')
     >>> v.get_label_by_id('10').set_text('Unknown')
     >>> v.get_label_by_id('A').set_text('Set A')
+    
+	You can provide sets themselves rather than subset sizes:
+    >>> v = venn2(subsets=[set([1,2]), set([2,3,4,5])], set_labels = ('A', 'B'))
+    >>> c = venn2_circles(subsets=[set([1,2]), set([2,3,4,5])], linestyle='dashed')
+    >>> print "%0.2f" % (v.get_circle_radius(1)/v.get_circle_radius(0))
+    1.41
     '''
     if isinstance(subsets, dict):
         subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
-    elif len(subsets) == 2:  # objects are sets themselves
-        set1, set2 = subsets
-        subsets = [len(set1 - set2), len(set2 - set1), len(set1.intersection(set2))]
+    elif len(subsets) == 2:
+        subsets = compute_venn2_subsets(*subsets)
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
     if (areas[0] < tol or areas[1] < tol):
@@ -250,4 +292,4 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
         labels[1].set_ha('left')
     else:
         labels = None
-    return Venn2(patches, texts, labels)
+    return Venn2(patches, texts, labels, centers, radii)
