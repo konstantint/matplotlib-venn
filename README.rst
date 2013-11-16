@@ -25,7 +25,7 @@ The functions ``venn2`` and ``venn2_circles`` accept as their only required argu
     venn2(subsets = (3, 2, 1))
 
 and draw a two-circle venn diagram with respective region areas. In the particular example, the region, corresponding to subset ``A and not B`` will
-be three times larger in area than the region, corresponding to subset ``A and B``. Alternatively, you can simply provide a list of two ``set'' objects instead (new in version 0.7), e.g.::
+be three times larger in area than the region, corresponding to subset ``A and B``. Alternatively, you can simply provide a list of two ``set`` objects instead (new in version 0.7), e.g.::
 
     venn2([set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])])
 
@@ -36,8 +36,8 @@ The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whe
 Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas, however in most cases the picture will still provide a decent indication.
 
 The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further 
-to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``Venn2`` or ``Venn3`` respectively,
-which gives access to constituent patches, text elements, as well as (since version 0.7) the information about the centers and radii of the circles.
+to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``VennDiagram``,
+which gives access to constituent patches, text elements, and (since version 0.7) the information about the centers and radii of the circles.
 
 Basic Example::
 
