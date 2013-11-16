@@ -31,7 +31,7 @@ be three times larger in area than the region, corresponding to subset ``A and B
 
 Similarly, the functions ``venn3`` and ``venn3_circles`` take a 7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC, ABC)``, and draw a three-circle area-weighted venn diagram. Alternatively, you can provide a list of three set objects (rather than counting sizes for all 7 subsets).
 
-The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whereas the functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored patches, annotated with text labels.
+The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whereas the functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored patches, annotated with text labels. In addition (version 0.7+), functions ``venn2_unweighted`` and ``venn3_unweighted`` draw the Venn diagrams without area-weighting.
 
 Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas, however in most cases the picture will still provide a decent indication.
 

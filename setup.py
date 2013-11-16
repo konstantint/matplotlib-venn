@@ -25,7 +25,7 @@ class PyTest(TestCommand):
         import pytest  # import here, cause outside the eggs aren't loaded
         pytest.main(self.test_args)
 
-version = '0.6'
+version = '0.7'
 
 setup(name='matplotlib-venn',
       version=version,

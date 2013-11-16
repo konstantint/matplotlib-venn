@@ -44,7 +44,7 @@ def test_compute_venn3_areas():
     tests.append(tuple(range(7)))
     
     for t in tests:
-        (A, B, C, AB, BC, AC, ABC) = compute_venn3_areas(t)
+        (A, B, C, AB, BC, AC, ABC) = compute_venn3_areas(t, _minimal_area = 0)
         t = np.array(t, float)
         t = t/np.sum(t)
         (Abc, aBc, ABc, abC, AbC, aBC, ABC) = t

@@ -15,23 +15,23 @@ from matplotlib.path import Path
 from matplotlib.colors import ColorConverter
 from matplotlib.pyplot import gca
 
-from _math import *
+from matplotlib_venn._math import *
+from matplotlib_venn._common import *
 
-
-def compute_venn3_areas(diagram_areas, normalize_to=1.0):
+def compute_venn3_areas(diagram_areas, normalize_to=1.0, _minimal_area=1e-6):
     '''
     The list of venn areas is given as 7 values, corresponding to venn diagram areas in the following order:
      (Abc, aBc, ABc, abC, AbC, aBC, ABC)
     (i.e. last element corresponds to the size of intersection A&B&C).
     The return value is a list of areas (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc),
-    such that the total area of all circles is normalized to normalize_to. If total area was 0, returns
-    (1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0)/3.0
+    such that the total area of all circles is normalized to normalize_to. 
+    If the area of any circle is smaller than _minimal_area, makes it equal to _minimal_area.
 
     Assumes all input values are nonnegative (to be more precise, all areas are passed through and abs() function)
     >>> compute_venn3_areas((1, 1, 0, 1, 0, 0, 0))
     (0.33..., 0.33..., 0.33..., 0.0, 0.0, 0.0, 0.0)
     >>> compute_venn3_areas((0, 0, 0, 0, 0, 0, 0))
-    (0.33..., 0.33..., 0.33..., 0.0, 0.0, 0.0, 0.0)
+    (1e-06, 1e-06, 1e-06, 0.0, 0.0, 0.0, 0.0)
     >>> compute_venn3_areas((1, 1, 1, 1, 1, 1, 1), normalize_to=7)
     (4.0, 4.0, 4.0, 2.0, 2.0, 2.0, 1.0)
     >>> compute_venn3_areas((1, 2, 3, 4, 5, 6, 7), normalize_to=56/2)
@@ -40,13 +40,23 @@ def compute_venn3_areas(diagram_areas, normalize_to=1.0):
     # Normalize input values to sum to 1
     areas = np.array(np.abs(diagram_areas), float)
     total_area = np.sum(areas)
-    if np.abs(total_area) < tol:
-        return (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0, 0.0, 0.0, 0.0, 0.0)
+    if np.abs(total_area) < _minimal_area:
+        warnings.warn("All circles have zero area")
+        return (1e-06, 1e-06, 1e-06, 0.0, 0.0, 0.0, 0.0)
     else:
         areas = areas / total_area * normalize_to
         A_a = areas[0] + areas[2] + areas[4] + areas[6]
+        if A_a < _minimal_area:
+            warnings.warn("Circle A has zero area")
+            A_a = _minimal_area
         A_b = areas[1] + areas[2] + areas[5] + areas[6]
+        if A_b < _minimal_area:
+            warnings.warn("Circle B has zero area")
+            A_b = _minimal_area
         A_c = areas[3] + areas[4] + areas[5] + areas[6]
+        if A_c < _minimal_area:
+            warnings.warn("Circle C has zero area")
+            A_c = _minimal_area
 
         # Areas of the three intersections (ab, ac, bc)
         A_ab, A_ac, A_bc = areas[2] + areas[6], areas[4] + areas[6], areas[5] + areas[6]
@@ -332,26 +342,6 @@ def make_venn3_region_patch(region):
     codes = [1] + [4] * (len(path) - 1)
     return PathPatch(Path(path, codes))
 
-def mix_colors(col1, col2, col3=None):
-    '''
-    Mixes two colors to compute a "mixed" color (for purposes of computing
-    colors of the intersection regions based on the colors of the sets.
-    Note that we do not simply compute averages of given colors as those seem
-    too dark for some default configurations. Thus, we lighten the combination up a bit.
-    
-    Inputs are (up to) three RGB triples of floats 0.0-1.0 given as numpy arrays.
-    
-    >>> mix_colors(np.array([1.0, 0., 0.]), np.array([1.0, 0., 0.])) # doctest: +NORMALIZE_WHITESPACE
-    array([ 1.,  0.,  0.])
-    >>> mix_colors(np.array([1.0, 1., 0.]), np.array([1.0, 0.9, 0.]), np.array([1.0, 0.8, 0.1])) # doctest: +NORMALIZE_WHITESPACE
-    array([ 1. ,  1. , 0.04])    
-    '''
-    if col3 is None:
-        mix_color = 0.7 * (col1 + col2)
-    else:
-        mix_color = 0.4 * (col1 + col2 + col3)
-    mix_color = np.min([mix_color, [1.0, 1.0, 1.0]], 0)    
-    return mix_color
 
 def compute_venn3_colors(set_colors):
     '''
@@ -365,22 +355,6 @@ def compute_venn3_colors(set_colors):
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
     return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]), base_colors[2],
             mix_colors(base_colors[0], base_colors[2]), mix_colors(base_colors[1], base_colors[2]), mix_colors(base_colors[0], base_colors[1], base_colors[2]))
-
-
-def prepare_venn3_axes(ax, centers, radii):
-    '''
-    Sets properties of the axis object to suit venn plotting. I.e. hides ticks, makes proper xlim/ylim.
-    '''
-    ax.set_aspect('equal')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    min_x = min([centers[i][0] - radii[i] for i in range(len(radii))])
-    max_x = max([centers[i][0] + radii[i] for i in range(len(radii))])
-    min_y = min([centers[i][1] - radii[i] for i in range(len(radii))])
-    max_y = max([centers[i][1] + radii[i] for i in range(len(radii))])
-    ax.set_xlim([min_x - 0.1, max_x + 0.1])
-    ax.set_ylim([min_y - 0.1, max_y + 0.1])
-    ax.set_axis_off()
 
 
 def compute_venn3_subsets(a, b, c):
@@ -435,7 +409,7 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     
     if ax is None:
         ax = gca()
-    prepare_venn3_axes(ax, centers, radii)
+    prepare_venn_axes(ax, centers, radii)
     result = []
     for (c, r) in zip(centers, radii):
         circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', linestyle=linestyle, linewidth=linewidth, **kwargs)
@@ -443,48 +417,6 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         result.append(circle)
     return result
 
-
-class Venn3:
-    '''
-    A container for a set of patches and patch labels and set labels, which make up the rendered venn diagram.
-    '''
-    id2idx = {'100': 0, '010': 1, '110': 2, '001': 3, '101': 4, '011': 5, '111': 6, 'A': 0, 'B': 1, 'C': 2}
-
-    def __init__(self, patches, subset_labels, set_labels, centers, radii):
-        self.patches = patches
-        self.subset_labels = subset_labels
-        self.set_labels = set_labels
-        self.centers = centers
-        self.radii = radii
-
-    def get_patch_by_id(self, id):
-        '''Returns a patch by a "region id". A region id is a string like 001, 011, 010, etc.'''
-        return self.patches[self.id2idx[id]]
-
-    def get_label_by_id(self, id):
-        '''
-        Returns a subset label by a "region id". A region id is a string like 001, 011, 010, etc.
-        Alternatively, if you provide either of 'A', 'B' or 'C', you will obtain the label of the
-        corresponding set (or None).'''
-        if len(id) == 1:
-            return self.set_labels[self.id2idx[id]] if self.set_labels is not None else None
-        else:
-            return self.subset_labels[self.id2idx[id]]
-
-    def get_circle_center(self, id):
-        '''
-        Returns the coordinates of the center of a circle as a numpy array (x,y)
-        id must be 0 or 1 (corresponding to the first or second circle). 
-        This is a getter-only (i.e. changing this value does not affect the diagram)
-        '''
-        return self.centers[id]
-    
-    def get_circle_radius(self, id):
-        '''
-        Returns the radius of circle id (where id is 0 or 1).
-        This is a getter-only (i.e. changing this value does not affect the diagram)
-        '''
-        return self.radii[id]
 
 def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 3-set area-weighted Venn diagram.
@@ -502,10 +434,13 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
 
     The ``normalize_to`` parameter specifies the total (on-axes) area of the circles to be drawn. Sometimes tuning it (together
     with the overall fiture size) may be useful to fit the text labels better.
-    The return value is a ``Venn3`` object, that keeps references to the ``Text`` and ``Patch`` objects used on the plot.
+    The return value is a ``VennDiagram`` object, that keeps references to the ``Text`` and ``Patch`` objects used on the plot
+    and lets you know the centers and radii of the circles, if you need it.
 
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
 
+    Note: if some of the circles happen to have zero area, you will probably not get a nice picture.
+    
     >>> import matplotlib # (The first two lines prevent the doctest from falling when TCL not installed. Not really necessary in most cases)
     >>> matplotlib.use('Agg')
     >>> from matplotlib_venn import *
@@ -529,15 +464,14 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
         subsets = compute_venn3_subsets(*subsets)
 
     areas = compute_venn3_areas(subsets, normalize_to)
-    if (areas[0] < tol or areas[1] < tol or areas[2] < tol):
-        raise Exception("All three circles in the diagram must have positive areas. Use venn2 or just a circle to draw diagrams with two or one circle.")
     centers, radii = solve_venn3_circles(areas)
     regions = compute_venn3_regions(centers, radii)
     colors = compute_venn3_colors(set_colors)
 
     if ax is None:
         ax = gca()
-    prepare_venn3_axes(ax, centers, radii)
+    prepare_venn_axes(ax, centers, radii)
+    
     # Create and add patches and text
     patches = [make_venn3_region_patch(r) for r in regions]
     for (p, c) in zip(patches, colors):
@@ -570,4 +504,4 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
             labels = [ax.text(pos[0], pos[1], txt, size='large', ha='center', va='top') for (pos, txt) in zip(label_positions, set_labels)]
     else:
         labels = None
-    return Venn3(patches, subset_labels, labels, centers, radii)
+    return VennDiagram(patches, subset_labels, labels, centers, radii)

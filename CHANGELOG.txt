@@ -1,3 +1,15 @@
+Version 0.7
+-----------
+
+    - Added the possibility to provide sets (rather than subset sizes) to venn2 and venn3
+      Thanks to https://github.com/aebrahim
+    - Functions won't bail out on sets of size 0 now (the diagrams won't look pretty, though)
+      Thanks to https://github.com/olgabot
+    - Venn2/Venn3 objects now provide information about the coordinates and radii of the circles.
+    - Utility functions added for drawing unweighed diagrams (venn2_unweighted, venn3_unweighted)
+    - Labels for zero-size sets can be switched off using a method of VennDiagram.
+    - Some general code refactoring.
+
 Version 0.6
 -----------
 
