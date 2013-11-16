@@ -32,7 +32,7 @@ setup(name='matplotlib-venn',
       description="Functions for plotting area-proportional two- and three-way Venn diagrams in matplotlib.",
       long_description=open("README.rst").read(),
       classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
