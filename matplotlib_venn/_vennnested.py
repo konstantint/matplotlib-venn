@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 from matplotlib.patches import FancyBboxPatch
 import itertools
+import scipy.stats
 
 default_attrs = [dict(ec=c, fc='None', alpha=0.7) for c in ['black', 'blue', 'red', 'green', 'magenta']]
 default_attrs = itertools.cycle(default_attrs)
@@ -41,6 +42,7 @@ def plot_box(bbox, label='', attrs={}):
 def nodesets_rectangles((node, children), bbox):
 	# plot what the children make out in the bbox
 	nodesize, nodelabel, nodeattrs = node
+	
 	nchildren = len(children)
 	
 	print 'node', node
@@ -48,9 +50,9 @@ def nodesets_rectangles((node, children), bbox):
 	for i, c in enumerate(children):
 		print '     %i: %s' % (i, c)
 	((xmin0, ymin0), (xmax0, ymax0)) = bbox.get_points()
+	deltay = ymax0 - ymin0
+	deltax = xmax0 - xmin0
 	if nchildren > 0:
-		deltay = ymax0 - ymin0
-		deltax = xmax0 - xmin0
 		nsizechildren = sum([size for (size, label, attrs), grandchildren in children])
 		empty = 1 - nsizechildren * 1. / nodesize
 		fbuffer = (empty)**0.5
@@ -68,19 +70,28 @@ def nodesets_rectangles((node, children), bbox):
 		size, label, attrs = child
 		arearatio = size * 1. / nodesize
 		print 'arearatio of child:', arearatio
+		if arearatio == 0:
+			# skip empty children
+			continue
 		
 		if nchildren == 1:
 			# update borders, proportional to area
-			f = (arearatio * 8/3.)**0.5
-			fx = 1/2. * f
-			fy = 3/4. * f
-			f = arearatio**0.5
-			ymax = ymax - deltay * (1 - fx*0.95)
-			xmin = xmin + deltax * (1 - fy*0.95)
-			ymin = ymin + deltay * (fx*0.05)
-			xmax = xmax - deltax * (fy*0.05)
-		else:
+			print 'single subset: arearatio', arearatio
+			# along a beta distribution; cdf is area
+			a, b = 10, 1
+			rv = scipy.stats.beta(a, b)
+			fx = rv.ppf(arearatio)
+			fy = arearatio / fx
+			print 'fx, fy:', fx, fy
+			# add padding if possible
+			ypad = min(fy*0.02, 1 - fy)
+			xpad = min(fx*0.02, 1 - fx)
 			
+			ymax = ymax - deltay * (1 - (fy + ypad))
+			xmin = xmin + deltax * (1 - (fx + xpad))
+			ymin = ymin + deltay * ypad
+			xmax = xmax - deltax * xpad
+		else:
 			# update borders, split dependent on xratio
 			# we prefer to split in y (because label text flows in x)
 			# but split if ratio is too extreme
@@ -121,10 +132,11 @@ def treesets_rectangles(tree):
 	# start with plotting root node
 	root, children = tree
 	size, label, attrs = root
+	assert size > 0
 	rootbox = mtransforms.Bbox([[xmin, ymin], [xmax, ymax]])
 	nodesets_rectangles((root, children), rootbox)
 	plot_box(bbox=rootbox, attrs=attrs, label=label)
-		
+
 def nestedsets_rectangles(setsizes, labels = None, attrs = None):
 	nsets = len(setsizes)
 	if labels is None:
