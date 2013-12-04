@@ -36,3 +36,8 @@ def test_tree_example2():
 	plt.savefig('example_tree2.pdf', bbox_inches='tight')
 	plt.close()
 
+if __name__ == '__main__':
+	test_nested_example1()
+	test_tree_example1()
+	test_tree_example2()
+

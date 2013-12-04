@@ -43,4 +43,5 @@ See also
 --------
 
 * Report issues and submit fixes at Github: https://github.com/JohannesBuchner/matplotlib-subsets
+* Venn diagram package: https://github.com/konstantint/matplotlib-venn
 
