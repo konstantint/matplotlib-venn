@@ -1,13 +1,4 @@
-'''
-Venn diagram plotting routines.
-Test module (meant to be used via py.test).
-
-Copyright 2012, Konstantin Tretyakov.
-http://kt.era.ee/
-
-Licensed under MIT license.
-'''
-from matplotlib_venn._vennnested import *
+from matplotlib_subsets import *
 
 def test_nested_example1():
 	sets = [

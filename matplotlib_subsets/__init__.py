@@ -1,6 +1,5 @@
 '''
-Venn diagram plotting routines.
-Rounded square, nested venn plotter.
+Subset diagram plotting routines.
 
 Copyright 2013, Johannes Buchner.
 
@@ -10,7 +9,6 @@ import numpy
 import warnings
 import string
 
-from matplotlib_venn import venn2, venn3
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 from matplotlib.patches import FancyBboxPatch
@@ -38,7 +36,6 @@ def plot_box(bbox, label='', attrs={}):
 		verticalalignment='top',
 		)
 	
-
 def nodesets_rectangles((node, children), bbox):
 	# plot what the children make out in the bbox
 	nodesize, nodelabel, nodeattrs = node
@@ -150,5 +147,6 @@ def nestedsets_rectangles(setsizes, labels = None, attrs = None):
 	for node in list(zip(setsizes, labels, attrs))[::-1]:
 		tree = [[node, tree]]
 	treesets_rectangles(tree[0])
+
 
 
