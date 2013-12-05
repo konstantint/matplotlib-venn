@@ -88,5 +88,6 @@ Perhaps the most common use case is generating a Venn diagram given three sets o
 See also
 --------
 
-* Blog post: http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
 * Report issues and submit fixes at Github: https://github.com/konstantint/matplotlib-venn
+* Some alternative means of plotting a Venn diagram (as of October 2012) are reviewed in the blog post: http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
+* The `matplotlib-subsets <https://pypi.python.org/pypi/matplotlib-subsets>`_ package visualizes a hierarchy of sets as a tree of rectangles.

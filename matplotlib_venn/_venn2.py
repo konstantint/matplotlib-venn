@@ -17,7 +17,7 @@ from matplotlib.pyplot import gca
 from matplotlib_venn._math import *
 from matplotlib_venn._common import *
 
-from _venn3 import make_venn3_region_patch
+from matplotlib_venn._venn3 import make_venn3_region_patch
 make_venn2_region_patch = make_venn3_region_patch  
 # We could put 'make_venn3_region_patch' into _common, however that function is best understood 
 # when read together with the rest of venn3 functionality.
@@ -67,7 +67,7 @@ def solve_venn2_circles(venn_areas):
     >>> np.round(r, 3)
     array([ 0.461,  0.515])
     '''
-    (A_a, A_b, A_ab) = map(float, venn_areas)
+    (A_a, A_b, A_ab) = list(map(float, venn_areas))
     r_a, r_b = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi)
     radii = np.array([r_a, r_b])
     if A_ab > tol:
@@ -215,7 +215,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
 	You can provide sets themselves rather than subset sizes:
     >>> v = venn2(subsets=[set([1,2]), set([2,3,4,5])], set_labels = ('A', 'B'))
     >>> c = venn2_circles(subsets=[set([1,2]), set([2,3,4,5])], linestyle='dashed')
-    >>> print "%0.2f" % (v.get_circle_radius(1)/v.get_circle_radius(0))
+    >>> print("%0.2f" % (v.get_circle_radius(1)/v.get_circle_radius(0)))
     1.41
     '''
     if isinstance(subsets, dict):

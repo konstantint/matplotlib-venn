@@ -84,7 +84,7 @@ def solve_venn3_circles(venn_areas):
     >>> np.round(r, 3)
     array([ 0.359,  0.476,  0.453])
     '''
-    (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc) = map(float, venn_areas)
+    (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc) = list(map(float, venn_areas))
     r_a, r_b, r_c = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi), np.sqrt(A_c / np.pi)
     intersection_areas = [A_ab, A_bc, A_ac]
     radii = np.array([r_a, r_b, r_c])
@@ -453,7 +453,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
 	
 	You can provide sets themselves rather than subset sizes:
     >>> v = venn3(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
-    >>> print "%0.2f %0.2f %0.2f" % (v.get_circle_radius(0), v.get_circle_radius(1)/v.get_circle_radius(0), v.get_circle_radius(2)/v.get_circle_radius(0))
+    >>> print("%0.2f %0.2f %0.2f" % (v.get_circle_radius(0), v.get_circle_radius(1)/v.get_circle_radius(0), v.get_circle_radius(2)/v.get_circle_radius(0)))
     0.24 1.41 2.00
     >>> c = venn3_circles(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
     '''

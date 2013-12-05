@@ -52,7 +52,7 @@ Example::
                 ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
 '''
-from _venn2 import venn2, venn2_circles
-from _venn3 import venn3, venn3_circles
-from _util import venn2_unweighted, venn3_unweighted
+from matplotlib_venn._venn2 import venn2, venn2_circles
+from matplotlib_venn._venn3 import venn3, venn3_circles
+from matplotlib_venn._util import venn2_unweighted, venn3_unweighted
 ___all___ = ['venn2', 'venn2_circles', 'venn3', 'venn3_circles', 'venn2_unweighted', 'venn3_unweighted']
