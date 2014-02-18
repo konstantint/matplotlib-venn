@@ -1,3 +1,8 @@
+Version 0.9
+-----------
+
+    - Better support for weird special cases in Venn3 (i.e. one circle being completely inside another, issue #10).
+
 Version 0.8
 -----------
 
