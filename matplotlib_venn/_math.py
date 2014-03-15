@@ -52,7 +52,7 @@ def circle_line_intersection(center, r, a, b):
     >>> circle_line_intersection(np.array([0.0, 0.0]), 1, np.array([-1.0, 0.0]), np.array([1.0, 0.0]))
     array([[ 1.,  0.],
            [-1.,  0.]])
-    >>> np.round(circle_line_intersection(np.array([1.0, 1.0]), np.sqrt(2), np.array([-1.0, 1.0]), np.array([1.0, -1.0])), 6)
+    >>> abs(np.round(circle_line_intersection(np.array([1.0, 1.0]), np.sqrt(2), np.array([-1.0, 1.0]), np.array([1.0, -1.0])), 6))
     array([[ 0.,  0.],
            [ 0.,  0.]])
     '''
