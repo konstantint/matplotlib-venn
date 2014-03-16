@@ -22,8 +22,9 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
+        import sys
         import pytest  # import here, cause outside the eggs aren't loaded
-        pytest.main(self.test_args)
+        sys.exit(pytest.main(self.test_args))
 
 version = '0.9'
 
