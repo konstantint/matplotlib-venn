@@ -158,6 +158,9 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     ``kwargs`` are passed as-is to matplotlib.patches.Circle.
     returns a list of three Circle patches.
 
+    >>> import matplotlib   # Necessary for running tests without GUI
+    >>> matplotlib.use('Agg', force=True)
+    
     >>> c = venn2_circles((1, 2, 3))
     >>> c = venn2_circles({'10': 1, '01': 2, '11': 3}) # Same effect
     >>> c = venn2_circles([set([1,2,3,4]), set([2,3,4,5,6])]) # Also same effect
@@ -201,8 +204,8 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
 
-    >>> import matplotlib.pyplot as p # (The first two lines prevent the doctests from falling when TCL not installed. Not really necessary in most cases)
-    >>> p.switch_backend('Agg')
+    >>> import matplotlib # Necessary for running tests without GUI
+    >>> matplotlib.use('Agg', force=True)
     
     >>> from matplotlib_venn import *
     >>> v = venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'))
