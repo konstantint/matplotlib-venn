@@ -7,6 +7,12 @@ http://kt.era.ee/
 
 Licensed under MIT license.
 '''
+# Make sure we don't try to do GUI stuff when running tests
+import sys, os
+if 'py.test' in os.path.basename(sys.argv[0]): # (XXX: Ugly hack)
+    import matplotlib
+    matplotlib.use('Agg')
+
 import numpy as np
 import warnings
 
@@ -200,9 +206,6 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     and lets you know the centers and radii of the circles, if you need it.
     
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
-
-    >>> import matplotlib.pyplot as p # (The first two lines prevent the doctests from falling when TCL not installed. Not really necessary in most cases)
-    >>> p.switch_backend('PS')
     
     >>> from matplotlib_venn import *
     >>> v = venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'))
