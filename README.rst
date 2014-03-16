@@ -2,6 +2,8 @@
 Venn diagram plotting routines for Python/Matplotlib
 ====================================================
 
+.. image:: https://travis-ci.org/konstantint/matplotlib-venn.png?branch=master   :target: https://travis-ci.org/konstantint/matplotlib-venn
+
 Routines for plotting area-weighted two- and three-circle venn diagrams.
 
 Installation

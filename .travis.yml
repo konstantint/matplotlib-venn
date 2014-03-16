@@ -1,10 +1,12 @@
 language: python
 python:
   - "2.7"
+  - "3.2"
+  - "3.3"
 virtualenv:
   system_site_packages: true
 before_install:
-  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
+  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib python3-numpy python3-scipy python3-matplotlib
 install:
   - pip install pytest
 script:
