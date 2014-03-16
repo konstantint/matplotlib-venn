@@ -4,6 +4,10 @@ python:
   - "3.2"
   - "2.7"
   - "2.6"
-  - "pypy"  
+  - "pypy"
+virtualenv:
+  system_site_packages: true
+before_install:
+ - sudo apt-get install -qq python-numpy python-scipy
 script:
   - python setup.py develop test
