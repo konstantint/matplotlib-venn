@@ -2,44 +2,68 @@
 Venn diagram plotting routines for Python/Matplotlib
 ====================================================
 
-.. image:: https://travis-ci.org/konstantint/matplotlib-venn.png?branch=master   :target: https://travis-ci.org/konstantint/matplotlib-venn
+.. image::  https://travis-ci.org/konstantint/matplotlib-venn.png?branch=master
+   :target: https://travis-ci.org/konstantint/matplotlib-venn
 
 Routines for plotting area-weighted two- and three-circle venn diagrams.
 
 Installation
 ------------
 
-The simplest way to install the package is via ``easy_install`` or ``pip``::
+The simplest way to install the package is via ``easy_install`` or
+``pip``::
 
     $ easy_install matplotlib-venn
 
 Dependencies
 ------------
 
-- ``numpy``, ``scipy``, ``matplotlib``.
+- ``numpy``,
+- ``scipy``
+- ``matplotlib``.
 
 Usage
 -----
-The package provides four main functions: ``venn2``, ``venn2_circles``, ``venn3`` and ``venn3_circles``.
+The package provides four main functions: ``venn2``,
+``venn2_circles``, ``venn3`` and ``venn3_circles``.
 
-The functions ``venn2`` and ``venn2_circles`` accept as their only required argument a 3-element list ``(Ab, aB, AB)`` of subset sizes, e.g.::
+The functions ``venn2`` and ``venn2_circles`` accept as their only
+required argument a 3-element list ``(Ab, aB, AB)`` of subset sizes,
+e.g.::
 
     venn2(subsets = (3, 2, 1))
 
-and draw a two-circle venn diagram with respective region areas. In the particular example, the region, corresponding to subset ``A and not B`` will
-be three times larger in area than the region, corresponding to subset ``A and B``. Alternatively, you can simply provide a list of two ``set`` objects instead (new in version 0.7), e.g.::
+and draw a two-circle venn diagram with respective region areas. In
+the particular example, the region, corresponding to subset ``A and
+not B`` will be three times larger in area than the region,
+corresponding to subset ``A and B``. Alternatively, you can simply
+provide a list of two ``set`` objects instead (new in version 0.7),
+e.g.::
 
     venn2([set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])])
 
-Similarly, the functions ``venn3`` and ``venn3_circles`` take a 7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC, ABC)``, and draw a three-circle area-weighted venn diagram. Alternatively, you can provide a list of three set objects (rather than counting sizes for all 7 subsets).
+Similarly, the functions ``venn3`` and ``venn3_circles`` take a
+7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC,
+ABC)``, and draw a three-circle area-weighted venn
+diagram. Alternatively, you can provide a list of three set objects
+(rather than counting sizes for all 7 subsets).
 
-The functions ``venn2_circles`` and ``venn3_circles`` draw just the circles, whereas the functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored patches, annotated with text labels. In addition (version 0.7+), functions ``venn2_unweighted`` and ``venn3_unweighted`` draw the Venn diagrams without area-weighting.
+The functions ``venn2_circles`` and ``venn3_circles`` draw just the
+circles, whereas the functions ``venn2`` and ``venn3`` draw the
+diagrams as a collection of colored patches, annotated with text
+labels. In addition (version 0.7+), functions ``venn2_unweighted`` and
+``venn3_unweighted`` draw the Venn diagrams without area-weighting.
 
-Note that for a three-circle venn diagram it is not in general possible to achieve exact correspondence between the required set sizes and region areas, however in most cases the picture will still provide a decent indication.
+Note that for a three-circle venn diagram it is not in general
+possible to achieve exact correspondence between the required set
+sizes and region areas, however in most cases the picture will still
+provide a decent indication.
 
-The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further 
+The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further
 to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``VennDiagram``,
-which gives access to constituent patches, text elements, and (since version 0.7) the information about the centers and radii of the circles.
+which gives access to constituent patches, text elements, and (since
+version 0.7) the information about the centers and radii of the
+circles.
 
 Basic Example::
 
@@ -66,9 +90,9 @@ A more elaborate example::
     c[0].set_lw(1.0)
     c[0].set_ls('dotted')
     plt.title("Sample Venn diagram")
-    plt.annotate('Unknown set', xy=v.get_label_by_id('100').get_position() - np.array([0, 0.05]), xytext=(-70,-70), 
-                ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
-                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
+    plt.annotate('Unknown set', xy=v.get_label_by_id('100').get_position() - np.array([0, 0.05]), xytext=(-70,-70),
+		ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
+		arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
     plt.show()
 
 An example with multiple subplots (new in version 0.6)::
@@ -81,7 +105,8 @@ An example with multiple subplots (new in version 0.6)::
     venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14}, ax=axes[1][1])
     plt.show()
 
-Perhaps the most common use case is generating a Venn diagram given three sets of objects::
+Perhaps the most common use case is generating a Venn diagram given
+three sets of objects::
 
     set1 = set(['A', 'B', 'C', 'D'])
     set2 = set(['B', 'C', 'D', 'E'])
@@ -89,10 +114,39 @@ Perhaps the most common use case is generating a Venn diagram given three sets o
 
     venn3([set1, set2, set3], ('Set1', 'Set2', 'Set3'))
     plt.show()
-   
+
+
+Running the tests
+-----------------
+
+
+On Linux (Fedora 20)
+====================
+
+Clone the source::
+
+    $ git clone https://github.com/konstantint/matplotlib-venn.git
+    $ cd matplotlib-venn
+
+The tests can be run using a test runner such as `nose
+<https://nose.readthedocs.org/en/latest/>`__.
+
+For Python 2::
+
+    $ nosetests
+
+For Python 3::
+
+    $ nosetests-3.3
+
 See also
 --------
 
-* Report issues and submit fixes at Github: https://github.com/konstantint/matplotlib-venn
-* Some alternative means of plotting a Venn diagram (as of October 2012) are reviewed in the blog post: http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
-* The `matplotlib-subsets <https://pypi.python.org/pypi/matplotlib-subsets>`_ package visualizes a hierarchy of sets as a tree of rectangles.
+* Report issues and submit fixes at Github:
+  https://github.com/konstantint/matplotlib-venn
+* Some alternative means of plotting a Venn diagram (as of
+  October 2012) are reviewed in the blog post:
+  http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
+* The `matplotlib-subsets
+  <https://pypi.python.org/pypi/matplotlib-subsets>`_ package
+  visualizes a hierarchy of sets as a tree of rectangles.
