@@ -192,7 +192,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
      - A list (or a tuple) containing two set objects.
      - A dict, providing sizes of three diagram regions.
        The regions are identified via two-letter binary codes ('10', '01', and '11'), hence a valid set could look like:
-       {'01': 10, '01': 20, '11': 40}. Unmentioned codes are considered to map to 0.
+       {'10': 10, '01': 20, '11': 40}. Unmentioned codes are considered to map to 0.
      - A list (or a tuple) with three numbers, denoting the sizes of the regions in the following order:
        (10, 01, 11)
 
