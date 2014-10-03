@@ -2,3 +2,5 @@
 build/
 dist/
 *.pyc
+*.ipynb
+.ipynb_checkpoint

@@ -19,7 +19,7 @@ Dependencies
 ------------
 
 - ``numpy``,
-- ``scipy``
+- ``scipy``,
 - ``matplotlib``.
 
 Usage
@@ -91,8 +91,8 @@ A more elaborate example::
     c[0].set_ls('dotted')
     plt.title("Sample Venn diagram")
     plt.annotate('Unknown set', xy=v.get_label_by_id('100').get_position() - np.array([0, 0.05]), xytext=(-70,-70),
-		ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
-		arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
+                 ha='center', textcoords='offset points', bbox=dict(boxstyle='round,pad=0.5', fc='gray', alpha=0.1),
+                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
     plt.show()
 
 An example with multiple subplots (new in version 0.6)::
@@ -116,34 +116,13 @@ three sets of objects::
     plt.show()
 
 
-Running the tests
------------------
-
-
-On Linux (Fedora 20)
-====================
-
-Clone the source::
-
-    $ git clone https://github.com/konstantint/matplotlib-venn.git
-    $ cd matplotlib-venn
-
-The tests can be run using a test runner such as `nose
-<https://nose.readthedocs.org/en/latest/>`__.
-
-For Python 2::
-
-    $ nosetests
-
-For Python 3::
-
-    $ nosetests-3.3
-
 See also
 --------
 
 * Report issues and submit fixes at Github:
   https://github.com/konstantint/matplotlib-venn
+  
+  Check out the ``DEVELOPER-README.rst`` for development-related notes.
 * Some alternative means of plotting a Venn diagram (as of
   October 2012) are reviewed in the blog post:
   http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
