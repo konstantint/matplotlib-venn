@@ -220,8 +220,11 @@ def compute_venn3_regions(centers, radii):
             regions.append(None)
             continue
         
-        if intersections[a] is not None and intersections[c] is not None:
+        if intersections[a] is not None and intersections[c] is not None and \
+           np.linalg.norm(centers[b] - centers[c]) > abs(radii[b] - radii[c]) + VISUAL_TOLERANCE:
             # Current circle intersects both of the other circles.
+            # And the circles are not one inside the other
+            
             if intersections[b] is not None:
                 # .. and the two other circles intersect, this is either the "normal" situation
                 #    or it can also be a case of bad placement
@@ -265,20 +268,25 @@ def compute_venn3_regions(centers, radii):
             arcs = (centers[a], radii[a], True)
             label_pos = centers[a]
         else:
-            # Current circle intersects one of the other circles
-            other_circle = b if intersections[a] is not None else c
-            other_circle_intersection = a if intersections[a] is not None else c
+            # Current circle intersects one of the other circles OR it intersects both, but one is inside the other (Issue #10)
+            if (intersections[a] is not None and intersections[c] is not None):
+                # Intersects both, but one inside the other.
+                other_circle = b if radii[b] > radii[c] else c
+            else:
+                other_circle = b if intersections[a] is not None else c
+            other_circle_intersection = a if other_circle == b else c
             i1, i2 = (0, 1) if intersections[a] is not None else (1, 0)
             # The patch is a [(AX, A-), (XA, X+)]
             points = np.array([intersections[other_circle_intersection][i1], intersections[other_circle_intersection][i2]])
             arcs = [(centers[a], radii[a], False), (centers[other_circle], radii[other_circle], True)]
-            if centers[a][0] < centers[other_circle][0]:
-                # We are to the left
-                label_pos_x = (centers[a][0] - radii[a] + centers[other_circle][0] - radii[other_circle]) / 2.0
-            else:
-                # We are to the right
-                label_pos_x = (centers[a][0] + radii[a] + centers[other_circle][0] + radii[other_circle]) / 2.0
-            label_pos = np.array([label_pos_x, centers[a][1]])
+            
+            # Position label exactly in the middle of the crescent
+            # Pos = other_center + normalize(this_center - other_center) * D
+            # where D = (r1 + r2 + distance)/2
+            D = (radii[a] + radii[other_circle] + np.linalg.norm(centers[a] - centers[other_circle])) / 2
+            v_dir = centers[a] - centers[other_circle]
+            v_dir = v_dir / np.linalg.norm(v_dir)
+            label_pos = centers[other_circle] + v_dir * D;
         regions.append((points, arcs, label_pos))
     
     # In the following we shall need to know, whether there is a "middle" region.

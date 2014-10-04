@@ -29,19 +29,23 @@ def point_in_patch(patch, point):
 def verify_diagram(diagram, test_points):
     '''
     Given an object returned from venn2/venn3 verifies that the regions of the diagram contain the given points.
+    In addition, makes sure that the diagram labels are within the corresponding regions (for all regions that are claimed to exist).
     Parameters:
        diagram: a VennDiagram object
        test_points: a dict, mapping region ids to lists of points that must be located in that region.
                     if some region is mapped to None rather than a list, the region must not be present in the diagram.
                     Region '' lists points that must not be present in any other region.
+                    All keys of this dictionary not mapped to None (except key '') correspond to regions that must exist in the diagram.
+                    For those regions we check that the region's label is positioned inside the region.
     '''
     for region in test_points.keys():
         points = test_points[region]
         if points is None:
-            assert diagram.get_patch_by_id(region) is None
+            assert diagram.get_patch_by_id(region) is None, "Region %s must be None" % region
         else:
             if (region != ''):
-                assert diagram.get_patch_by_id(region) is not None
+                assert diagram.get_patch_by_id(region) is not None, "Region %s must exist" % region
+                assert point_in_patch(diagram.get_patch_by_id(region), diagram.get_label_by_id(region).get_position()), "Label for region %s must be within this region" % region
             for pt in points:
                 scatter(pt[0], pt[1])
                 for test_region in test_points.keys(): # Test that the point is in its own region and no one else's

@@ -27,6 +27,9 @@ def exec_ipynb(filename):
 def test_venn2():
     exec_ipynb(os.path.join(os.path.dirname(__file__), "venn2_functional.ipynb"))
 
+def test_venn3():
+    exec_ipynb(os.path.join(os.path.dirname(__file__), "venn3_functional.ipynb"))
+
     
     
     
