@@ -2,5 +2,6 @@
 build/
 dist/
 *.pyc
-*.ipynb
-.ipynb_checkpoint
+Temp.ipynb
+.ipynb_checkpoints
+*.komodoproject

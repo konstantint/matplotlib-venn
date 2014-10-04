@@ -37,3 +37,17 @@ However, this will install the ``py.test`` egg locally in this directory and tak
 If you plan to contribute code, please, test that it works both for Python 2.x and Python 3.x.
 
 
+Functional tests
+-----------------
+
+The functional tests for the package are developed using the ``ipython`` notebook interface
+and stored in the ``tests/*.ipynb`` files. Those notebook files are executed automatically when ``py.test`` is run
+from the code in ``tests/functional_test.py``.
+
+To review and develop functional tests you therefore have to install ``ipython[notebook]``::
+
+    $ pip install ipython[notebook]
+	
+In order for the notebook code to execute correctly, the ``matplotlib_venn`` and ``tests`` packages must be in 
+your Python's scope, which will happen automatically if you did ``python setup.py develop`` before.
+
