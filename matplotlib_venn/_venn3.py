@@ -462,33 +462,33 @@ def compute_venn3_colors(set_colors):
 
 
 def compute_venn3_subsets(a, b, c):
-	'''
-	Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
-	as needed by the subsets parameter of venn3 and venn3_circles.
-	Returns the result as a tuple.
-	
-	>>> compute_venn3_subsets(set([1,2,3]), set([2,3,4]), set([3,4,5,6]))
-	(1, 0, 1, 2, 0, 1, 1)
-	>>> compute_venn3_subsets(set([]), set([]), set([]))
-	(0, 0, 0, 0, 0, 0, 0)
-	>>> compute_venn3_subsets(set([1]), set([]), set([]))
-	(1, 0, 0, 0, 0, 0, 0)
-	>>> compute_venn3_subsets(set([]), set([1]), set([]))
-	(0, 1, 0, 0, 0, 0, 0)
-	>>> compute_venn3_subsets(set([]), set([]), set([1]))
-	(0, 0, 0, 1, 0, 0, 0)
-	>>> compute_venn3_subsets(set([1]), set([1]), set([1]))
-	(0, 0, 0, 0, 0, 0, 1)
-	>>> compute_venn3_subsets(set([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
-	(1, 1, 1, 1, 1, 1, 1)
-	'''
-	return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
-            len(b - (a.union(c))),
-            len(a.intersection(b) - c),
-            len(c - (a.union(b))),
-            len(a.intersection(c) - b),
-            len(b.intersection(c) - a),
-            len(a.intersection(b).intersection(c)))
+    '''
+    Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
+    as needed by the subsets parameter of venn3 and venn3_circles.
+    Returns the result as a tuple.
+    
+    >>> compute_venn3_subsets(set([1,2,3]), set([2,3,4]), set([3,4,5,6]))
+    (1, 0, 1, 2, 0, 1, 1)
+    >>> compute_venn3_subsets(set([]), set([]), set([]))
+    (0, 0, 0, 0, 0, 0, 0)
+    >>> compute_venn3_subsets(set([1]), set([]), set([]))
+    (1, 0, 0, 0, 0, 0, 0)
+    >>> compute_venn3_subsets(set([]), set([1]), set([]))
+    (0, 1, 0, 0, 0, 0, 0)
+    >>> compute_venn3_subsets(set([]), set([]), set([1]))
+    (0, 0, 0, 1, 0, 0, 0)
+    >>> compute_venn3_subsets(set([1]), set([1]), set([1]))
+    (0, 0, 0, 0, 0, 0, 1)
+    >>> compute_venn3_subsets(set([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
+    (1, 1, 1, 1, 1, 1, 1)
+    '''
+    return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
+        len(b - (a.union(c))),
+        len(a.intersection(b) - c),
+        len(c - (a.union(b))),
+        len(a.intersection(c) - b),
+        len(b.intersection(c) - a),
+        len(a.intersection(b).intersection(c)))
 
 
 def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
@@ -499,8 +499,8 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     kwargs are passed as-is to matplotlib.patches.Circle.
     returns a list of three Circle patches.
 
-    >>> plot = venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14})
-	>>> plot = venn3_circles([set(['A','B','C']), set(['A','D','E','F']), set(['D','G','H'])])
+        >>> plot = venn3_circles({'001': 10, '100': 20, '010': 21, '110': 13, '011': 14})
+        >>> plot = venn3_circles([set(['A','B','C']), set(['A','D','E','F']), set(['D','G','H'])])
     '''
     # Prepare parameters
     if isinstance(subsets, dict):

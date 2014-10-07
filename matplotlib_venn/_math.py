@@ -126,14 +126,20 @@ def circle_circle_intersection(C_a, r_a, C_b, r_b):
     >>> circle_circle_intersection([0, 0], 1, [2.1, 0], 1) is None # No intersections (one circle outside another)
     True
     '''
-    C_a, C_b = np.array(C_a, float), np.array(C_b, float)
+    C_a, C_b = np.asarray(C_a, float), np.asarray(C_b, float)
     v_ab = C_b - C_a
     d_ab = np.linalg.norm(v_ab)
-    if np.abs(d_ab) < tol:  # No intersection points
+    if np.abs(d_ab) < tol:  # No intersection points or infinitely many of them (circle centers coincide)
         return None
     cos_gamma = (d_ab**2 + r_a**2 - r_b**2) / 2.0 / d_ab / r_a
-    if abs(cos_gamma) > 1.0:
-        return None
+    
+    if abs(cos_gamma) > 1.0 + tol/10: # Allow for a tiny numeric tolerance here too (always better to be return something instead of None, if possible)
+        return None         # No intersection point (circles do not touch)
+    if (cos_gamma > 1.0):
+        cos_gamma = 1.0
+    if (cos_gamma < -1.0):
+        cos_gamma = -1.0
+    
     sin_gamma = np.sqrt(1 - cos_gamma**2)
     u = v_ab / d_ab
     v = np.array([-u[1], u[0]])
