@@ -101,7 +101,7 @@ def test_circle_region():
             assert ir.arcs[i].approximately_equal(ir.arcs[i]) 
 
 def test_region_visual():
-    pass #exec_ipynb(os.path.join(os.path.dirname(__file__), "region_visual.ipynb"))
+    exec_ipynb(os.path.join(os.path.dirname(__file__), "region_visual.ipynb"))
 
 
 def test_region_label_visual():
