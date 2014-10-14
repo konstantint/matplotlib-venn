@@ -13,6 +13,33 @@ import numpy as np
 
 tol = 1e-10
 
+def point_in_circle(pt, center, radius):
+    '''
+    Returns true if a given point is located inside (or on the border) of a circle.
+    
+    >>> point_in_circle((0, 0), (0, 0), 1)
+    True
+    >>> point_in_circle((1, 0), (0, 0), 1)
+    True
+    >>> point_in_circle((1, 1), (0, 0), 1)
+    False
+    '''
+    d = np.linalg.norm(np.asarray(pt) - np.asarray(center))
+    return d <= radius
+
+def box_product(v1, v2):
+    '''Returns a determinant |v1 v2|. The value is equal to the signed area of a parallelogram built on v1 and v2.
+    The value is positive is v2 is to the left of v1.
+    
+    >>> box_product((0.0, 1.0), (0.0, 1.0))
+    0.0
+    >>> box_product((1.0, 0.0), (0.0, 1.0))
+    1.0
+    >>> box_product((0.0, 1.0), (1.0, 0.0))
+    -1.0
+    '''
+    return v1[0]*v2[1] - v1[1]*v2[0]
+
 
 def circle_intersection_area(r, R, d):
     '''

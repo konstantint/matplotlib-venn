@@ -1,3 +1,11 @@
+Version 0.10
+------------
+
+    - Completely rewritten the region generation logic, presumably fixing all of the problems behind issue #14
+      (and hopefully not introducing too many new bugs). The new algorithm positions the labels in a different way,
+      which may look slightly worse than the previous one in some rare cases.
+    - New kind of IPython-based tests.
+
 Version 0.9
 -----------
 

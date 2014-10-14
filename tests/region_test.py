@@ -10,9 +10,12 @@ http://kt.era.ee/
 Licensed under MIT license.
 '''
 import pytest
+import os
 import numpy as np
+from tests.utils import exec_ipynb
 from matplotlib_venn._region import VennCircleRegion, VennArcgonRegion, VennRegionException
 from matplotlib_venn._math import tol
+
 
 def test_circle_region():
     with pytest.raises(VennRegionException):
@@ -95,5 +98,11 @@ def test_circle_region():
         assert sr2.size() > 0
         assert ir2.size() > 0
         for i in range(2):
-            assert ir.arcs[i].approximately_equal(ir.arcs[i])
-        
+            assert ir.arcs[i].approximately_equal(ir.arcs[i]) 
+
+def test_region_visual():
+    pass #exec_ipynb(os.path.join(os.path.dirname(__file__), "region_visual.ipynb"))
+
+
+def test_region_label_visual():
+    exec_ipynb(os.path.join(os.path.dirname(__file__), "region_label_visual.ipynb"))

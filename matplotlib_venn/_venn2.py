@@ -22,11 +22,8 @@ from matplotlib.pyplot import gca
 
 from matplotlib_venn._math import *
 from matplotlib_venn._common import *
+from matplotlib_venn._region import VennCircleRegion
 
-from matplotlib_venn._venn3 import make_venn3_region_patch
-make_venn2_region_patch = make_venn3_region_patch  
-# We could put 'make_venn3_region_patch' into _common, however that function is best understood 
-# when read together with the rest of venn3 functionality.
 
 def compute_venn2_areas(diagram_areas, normalize_to=1.0):
     '''
@@ -90,38 +87,17 @@ def solve_venn2_circles(venn_areas):
 
 def compute_venn2_regions(centers, radii):
     '''
-    See compute_venn3_regions for explanations.
+    Returns a triple of VennRegion objects, describing the three regions of the diagram, corresponding to sets
+    (Ab, aB, AB)
+    
     >>> centers, radii = solve_venn2_circles((1, 1, 0.5))
     >>> regions = compute_venn2_regions(centers, radii)
     '''
-    intersection = circle_circle_intersection(centers[0], radii[0], centers[1], radii[1])
-    if intersection is None:
-        # Two circular regions
-        regions = [("CIRCLE", (centers[a], radii[a], True), centers[a]) for a in [0, 1]] + [None]
-    else:
-        # Three curved regions
-        regions = []
-        for (a, b) in [(0, 1), (1, 0)]:
-            # Make region a&not b:  [(AB, A-), (BA, B+)]
-            points = np.array([intersection[a], intersection[b]])
-            arcs = [(centers[a], radii[a], False), (centers[b], radii[b], True)]
-            if centers[a][0] < centers[b][0]:
-                # We are to the left
-                label_pos_x = (centers[a][0] - radii[a] + centers[b][0] - radii[b]) / 2.0
-            else:
-                # We are to the right
-                label_pos_x = (centers[a][0] + radii[a] + centers[b][0] + radii[b]) / 2.0
-            label_pos = np.array([label_pos_x, centers[a][1]])
-            regions.append((points, arcs, label_pos))
-
-        # Make region a&b: [(AB, A+), (BA, B+)]
-        (a, b) = (0, 1)
-        points = np.array([intersection[a], intersection[b]])
-        arcs = [(centers[a], radii[a], True), (centers[b], radii[b], True)]
-        label_pos_x = (centers[a][0] + radii[a] + centers[b][0] - radii[b]) / 2.0
-        label_pos = np.array([label_pos_x, centers[a][1]])
-        regions.append((points, arcs, label_pos))
-    return regions
+    A = VennCircleRegion(centers[0], radii[0])
+    B = VennCircleRegion(centers[1], radii[1])
+    Ab, AB = A.subtract_and_intersect_circle(B.center, B.radius)
+    aB, _ = B.subtract_and_intersect_circle(A.center, A.radius)
+    return (Ab, aB, AB)
 
 
 def compute_venn2_colors(set_colors):
@@ -215,7 +191,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     >>> v.get_label_by_id('10').set_text('Unknown')
     >>> v.get_label_by_id('A').set_text('Set A')
     
-	You can provide sets themselves rather than subset sizes:
+    You can provide sets themselves rather than subset sizes:
     >>> v = venn2(subsets=[set([1,2]), set([2,3,4,5])], set_labels = ('A', 'B'))
     >>> c = venn2_circles(subsets=[set([1,2]), set([2,3,4,5])], linestyle='dashed')
     >>> print("%0.2f" % (v.get_circle_radius(1)/v.get_circle_radius(0)))
@@ -233,17 +209,19 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
-    # Create and add patches and text
-    patches = [make_venn2_region_patch(r) for r in regions]
+    
+    # Create and add patches and subset labels
+    patches = [r.make_patch() for r in regions]
     for (p, c) in zip(patches, colors):
         if p is not None:
             p.set_facecolor(c)
             p.set_edgecolor('none')
             p.set_alpha(alpha)
             ax.add_patch(p)
-    texts = [ax.text(r[2][0], r[2][1], str(s), va='center', ha='center') if r is not None else None for (r, s) in zip(regions, subsets)]
+    label_positions = [r.label_position() for r in regions]
+    subset_labels = [ax.text(lbl[0], lbl[1], str(s), va='center', ha='center') if lbl is not None else None for (lbl, s) in zip(label_positions, subsets)]
 
-    # Position labels
+    # Position set labels
     if set_labels is not None:
         padding = np.mean([r * 0.1 for r in radii])
         label_positions = [centers[0] + np.array([0.0, - radii[0] - padding]),
@@ -252,4 +230,4 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
         labels[1].set_ha('left')
     else:
         labels = None
-    return VennDiagram(patches, texts, labels, centers, radii)
+    return VennDiagram(patches, subset_labels, labels, centers, radii)

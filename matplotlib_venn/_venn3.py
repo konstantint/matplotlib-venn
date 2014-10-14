@@ -17,6 +17,8 @@ from matplotlib.pyplot import gca
 
 from matplotlib_venn._math import *
 from matplotlib_venn._common import *
+from matplotlib_venn._region import VennCircleRegion, VennEmptyRegion
+
 
 def compute_venn3_areas(diagram_areas, normalize_to=1.0, _minimal_area=1e-6):
     '''
@@ -178,273 +180,24 @@ def position_venn3_circles_generic(radii, dists):
 def compute_venn3_regions(centers, radii):
     '''
     Given the 3x2 matrix with circle center coordinates, and a 3-element list (or array) with circle radii [as returned from solve_venn3_circles],
-    returns the 7 regions, comprising the venn diagram.
-    Each region is given as [array([pt_1, pt_2, pt_3]), (arc_1, arc_2, arc_3), label_pos] where each pt_i gives the coordinates of a point,
-    and each arc_i is in turn a triple (circle_center, circle_radius, direction), and label_pos is the recommended center point for
-    positioning region label.
-
-    The region is the poly-curve constructed by moving from pt_1 to pt_2 along arc_1, then to pt_3 along arc_2 and back to pt_1 along arc_3.
-    Arc direction==True denotes positive (CCW) direction.
-
-     There is also a special case, where the region is given as
-    ["CIRCLE", (center, radius, True), label_pos], which corresponds to a completely circular region.
+    returns the 7 regions, comprising the venn diagram, as VennRegion objects.
 
     Regions are returned in order (Abc, aBc, ABc, abC, AbC, aBC, ABC)
 
     >>> centers, radii = solve_venn3_circles((1, 1, 1, 1, 1, 1, 1))
     >>> regions = compute_venn3_regions(centers, radii)
     '''
-    #(a, b, c) = (0, 1, 2)  <- This makes it possible to use the same code for the three regions aBC, AbC, ABc
-
-    # This is the floating point comparison tolerance that we use when checking whether a circle is inside another one
-    # The value is due to the default "numeric_correction" parameter used in _math.find_distance_by_area()
-    VISUAL_TOLERANCE = 1e-04 + tol    
-    
-    # Internal function to check whether one circle is completely within another. Circles given as their ids [0,1,2]
-    def circle_inside(i, j): # Returns True if circle i is inside circle j
-        return np.linalg.norm(centers[i] - centers[j]) + radii[i] <= radii[j] + VISUAL_TOLERANCE
-        
-    # First compute all pairwise circle intersections
-    intersections = [circle_circle_intersection(centers[i], radii[i], centers[j], radii[j]) for (i, j) in [(0, 1), (1, 2), (2, 0)]]
-    regions = []
-    
-    # Regions [Abc, aBc, abC]
-    for i in range(3):
-        (a, b, c) = (i, (i + 1) % 3, (i + 2) % 3)
-        
-        # (Issue 10) First check whether A is fully inside B or inside C. In this case the region is empty.
-        if np.linalg.norm(centers[b] - centers[a]) + radii[a] <= radii[b] + VISUAL_TOLERANCE:  # A is totally within B
-            regions.append(None)
-            continue
-        elif np.linalg.norm(centers[c] - centers[a]) + radii[a] <= radii[c] + VISUAL_TOLERANCE:  # A is totally within C
-            regions.append(None)
-            continue
-        
-        if intersections[a] is not None and intersections[c] is not None and \
-           np.linalg.norm(centers[b] - centers[c]) > abs(radii[b] - radii[c]) + VISUAL_TOLERANCE:
-            # Current circle intersects both of the other circles.
-            # And the circles are not one inside the other
-            
-            if intersections[b] is not None:
-                # .. and the two other circles intersect, this is either the "normal" situation
-                #    or it can also be a case of bad placement
-                if np.linalg.norm(intersections[b][0] - centers[a]) < radii[a]:
-                    # In the "normal" situation we use the scheme [(BA, B+), (BC, C+), (AC, A-)]
-                    points = np.array([intersections[a][1], intersections[b][0], intersections[c][1]])
-                    arcs = [(centers[b], radii[b], True), (centers[c], radii[c], True), (centers[a], radii[a], False)]
-
-                    # Ad-hoc label positioning
-                    pt_a = intersections[b][0]
-                    pt_b = intersections[b][1]
-                    pt_c = circle_line_intersection(centers[a], radii[a], pt_a, pt_b)
-                    if pt_c is None:
-                        label_pos = circle_circle_intersection(centers[b], radii[b] + 0.1 * radii[a], centers[c], radii[c] + 0.1 * radii[c])[0]
-                    else:
-                        label_pos = 0.5 * (pt_c[1] + pt_a)
-                else:
-                    # This is the "bad" situation (basically one disc covers two touching disks)
-                    # We use the scheme [(BA, B+), (AB, A-)] if (AC is inside B) and
-                    #                   [(CA, C+), (AC, A-)] otherwise
-                    if np.linalg.norm(intersections[c][0] - centers[b]) < radii[b]:
-                        points = np.array([intersections[a][1], intersections[a][0]])
-                        arcs = [(centers[b], radii[b], True), (centers[a], radii[a], False)]
-                    else:
-                        points = np.array([intersections[c][0], intersections[c][1]])
-                        arcs = [(centers[c], radii[c], True), (centers[a], radii[a], False)]
-                    label_pos = centers[a]
-            else:
-                # .. and the two other circles do not intersect. This means we are in the "middle" of a OoO placement.
-                # The patch is then a [(AB, B-), (BA, A+), (AC, C-), (CA, A+)]
-                points = np.array([intersections[a][0], intersections[a][1], intersections[c][1], intersections[c][0]])
-                arcs = [(centers[b], radii[b], False), (centers[a], radii[a], True), (centers[c], radii[c], False), (centers[a], radii[a], True)]
-                # Label will be between the b and c circles
-                leftc, rightc = (b, c) if centers[b][0] < centers[c][0] else (c, b)
-                label_x = ((centers[leftc][0] + radii[leftc]) + (centers[rightc][0] - radii[rightc])) / 2.0
-                label_y = centers[a][1] + radii[a] / 2.0
-                label_pos = np.array([label_x, label_y])
-        elif intersections[a] is None and intersections[c] is None:
-            # Current circle is completely separate from others
-            points = "CIRCLE"
-            arcs = (centers[a], radii[a], True)
-            label_pos = centers[a]
-        else:
-            # Current circle intersects one of the other circles OR it intersects both, but one is inside the other (Issue #10)
-            if (intersections[a] is not None and intersections[c] is not None):
-                # Intersects both, but one inside the other.
-                other_circle = b if radii[b] > radii[c] else c
-            else:
-                other_circle = b if intersections[a] is not None else c
-            other_circle_intersection = a if other_circle == b else c
-            i1, i2 = (0, 1) if intersections[a] is not None else (1, 0)
-            # The patch is a [(AX, A-), (XA, X+)]
-            points = np.array([intersections[other_circle_intersection][i1], intersections[other_circle_intersection][i2]])
-            arcs = [(centers[a], radii[a], False), (centers[other_circle], radii[other_circle], True)]
-            
-            # Position label exactly in the middle of the crescent
-            # Pos = other_center + normalize(this_center - other_center) * D
-            # where D = (r1 + r2 + distance)/2
-            D = (radii[a] + radii[other_circle] + np.linalg.norm(centers[a] - centers[other_circle])) / 2
-            v_dir = centers[a] - centers[other_circle]
-            v_dir = v_dir / np.linalg.norm(v_dir)
-            label_pos = centers[other_circle] + v_dir * D;
-        regions.append((points, arcs, label_pos))
-    
-    # In the following we shall need to know, whether there is a "middle" region.
-    (a, b, c) = (0, 1, 2)
-    has_middle_region = intersections[a] is not None and intersections[b] is not None and intersections[c] is not None and\
-                        (np.linalg.norm(intersections[b][0] - centers[a]) < radii[a] or\
-                        np.linalg.norm(intersections[c][0] - centers[b]) < radii[b] or\
-                        np.linalg.norm(intersections[a][0] - centers[c]) < radii[c])
-    
-    # Regions [aBC, AbC, ABc]
-    for i in range(3):
-        (a, b, c) = (i, (i + 1) % 3, (i + 2) % 3)
-
-        if intersections[b] is None:  # B and C do not intersect, no region there
-            regions.append(None)
-            continue
-            
-        # (Issue 10). There is a possibility, that the region aBC does not exist because B or C is completely within A.
-        if circle_inside(b, a):
-            regions.append(None)
-            continue
-        if circle_inside(c, a):  # C is totally within A
-            regions.append(None)
-            continue        
-
-        # (Issue 10). Another inconvenient possibility is that B is totally within C, or C within B, in which case
-        # the region aBC is basically aB or aC.
-        if circle_inside(b, c):  
-            # B is totally within C
-            # Now if A and B intersect, the region is [(AB, A+), (BA, B-)]
-            if intersections[a] is not None:
-                points = np.array([intersections[a][0], intersections[a][1]])
-                arcs = [(centers[a], radii[a], True), (centers[b], radii[b], False)]
-                # Ad-hoc label positioning
-                dir_a_to_b = centers[b] - centers[a]
-                dir_a_to_b = dir_a_to_b / np.linalg.norm(dir_a_to_b)
-                pt_a = centers[a] + radii[a]*dir_a_to_b
-                pt_b = centers[a] + (radii[b] + np.linalg.norm(centers[b] - centers[a]))*dir_a_to_b
-                label_pos = 0.5 * (pt_a + pt_b)
-            else:
-                # A and B do not intersect, the region is just the circle B
-                points = "CIRCLE"
-                arcs = (centers[b], radii[b], True)
-                label_pos = centers[b]
-            regions.append((points, arcs, label_pos))
-            continue
-        elif circle_inside(c, b): 
-            # Same as above, but now C totally in B
-            # Now if A and C intersect, the region is [(AC, A+), (CA, C-)]
-            if intersections[c] is not None:
-                points = np.array([intersections[c][1], intersections[c][0]])
-                arcs = [(centers[a], radii[a], True), (centers[c], radii[c], False)]
-                # Ad-hoc label positioning
-                dir_a_to_c = centers[c] - centers[a]
-                dir_a_to_c = dir_a_to_c / np.linalg.norm(dir_a_to_c)
-                pt_a = centers[a] + radii[a]*dir_a_to_c
-                pt_b = centers[a] + (radii[c] + np.linalg.norm(centers[c] - centers[a]))*dir_a_to_c
-                label_pos = 0.5 * (pt_a + pt_b)
-            else:
-                # A and C do not intersect, the region is just the circle C
-                points = "CIRCLE"
-                arcs = (centers[c], radii[c], True)
-                label_pos = centers[c]
-            regions.append((points, arcs, label_pos))
-            continue
-        
-        # The remaining options are as follows: either there is a "middle" triangular region ABC [the most common form of a Venn diagram],
-        # or there is no such region, and BC is located completely outside of the circle A.
-        if has_middle_region:
-            # This is the "normal" situation (i.e. all three circles have a common area)
-            # We then use the scheme [(CB, C+), (CA, A-), (AB, B+)]
-            points = np.array([intersections[b][1], intersections[c][0], intersections[a][0]])
-            arcs = [(centers[c], radii[c], True), (centers[a], radii[a], False), (centers[b], radii[b], True)]
-            # Ad-hoc label positioning
-            pt_a = intersections[b][1]
-            dir_to_a = pt_a - centers[a]
-            dir_to_a = dir_to_a / np.linalg.norm(dir_to_a)
-            pt_b = centers[a] + dir_to_a * radii[a]
-            label_pos = 0.5 * (pt_a + pt_b)
-        else:
-            # This is the situation, where there is no common area
-            # Then the corresponding area is made by scheme [(CB, C+), (BC, B+), None]
-            points = np.array([intersections[b][1], intersections[b][0]])
-            arcs = [(centers[c], radii[c], True), (centers[b], radii[b], True)]
-            label_pos = 0.5 * (intersections[b][1] + intersections[b][0])
-
-        regions.append((points, arcs, label_pos))
-
-    # Central region made by scheme [(BC, B+), (AB, A+), (CA, C+)], unless one of the circles is totally inside some other.
-    (a, b, c) = (0, 1, 2)
-    if intersections[a] is None or intersections[b] is None or intersections[c] is None:
-        # No middle region
-        regions.append(None)
-    else:
-        # Now check for a special case, where one of the circles is inside another
-        done_last_region = False
-        for i in range(3):
-            (a, b, c) = (i, (i + 1) % 3, (i + 2) % 3)
-            if circle_inside(a, b):
-                # [(AC, A+), (CA, C+)]
-                points = np.array([intersections[c][1], intersections[c][0]])
-                label_pos = np.mean(points, 0)  # Middle of the central region
-                arcs = [(centers[a], radii[a], True), (centers[c], radii[c], True)]
-                regions.append((points, arcs, label_pos))
-                done_last_region = True
-                break
-            elif circle_inside(a, c):
-                # [(AB, A+), (BA, B+)]
-                points = np.array([intersections[a][0], intersections[a][1]])
-                label_pos = np.mean(points, 0)  # Middle of the central region
-                arcs = [(centers[a], radii[a], True), (centers[b], radii[b], True)]
-                regions.append((points, arcs, label_pos))
-                done_last_region = True
-                break                
-        # No, the standard case
-        if not done_last_region:
-            # The standard case
-            points = np.array([intersections[b][0], intersections[a][0], intersections[c][0]])
-            label_pos = np.mean(points, 0)  # Middle of the central region
-            arcs = [(centers[b], radii[b], True), (centers[a], radii[a], True), (centers[c], radii[c], True)]
-            if has_middle_region:
-                regions.append((points, arcs, label_pos))
-            else:
-                regions.append(([], [], label_pos))
-
-    #      (Abc,        aBc,        ABc,        abC,        AbC,        aBC,        ABC)
-    return (regions[0], regions[1], regions[5], regions[2], regions[4], regions[3], regions[6])
-
-
-def make_venn3_region_patch(region):
-    '''
-    Given a venn3 region (as returned from compute_venn3_regions) produces a Patch object,
-    depicting the region as a curve.
-
-    >>> centers, radii = solve_venn3_circles((1, 1, 1, 1, 1, 1, 1))
-    >>> regions = compute_venn3_regions(centers, radii)
-    >>> patches = [make_venn3_region_patch(r) for r in regions]
-    '''
-    if region is None or len(region[0]) == 0:
-        return None
-    if region[0] == "CIRCLE":
-        return Circle(region[1][0], region[1][1])
-    pts, arcs, label_pos = region
-    path = [pts[0]]
-    for i in range(len(pts)):
-        j = (i + 1) % len(pts)
-        (center, radius, direction) = arcs[i]
-        fromangle = vector_angle_in_degrees(pts[i] - center)
-        toangle = vector_angle_in_degrees(pts[j] - center)
-        if direction:
-            vertices = Path.arc(fromangle, toangle).vertices
-        else:
-            vertices = Path.arc(toangle, fromangle).vertices
-            vertices = vertices[np.arange(len(vertices) - 1, -1, -1)]
-        vertices = vertices * radius + center
-        path = path + list(vertices[1:])
-    codes = [1] + [4] * (len(path) - 1)
-    return PathPatch(Path(path, codes))
+    A = VennCircleRegion(centers[0], radii[0])
+    B = VennCircleRegion(centers[1], radii[1])
+    C = VennCircleRegion(centers[2], radii[2])
+    Ab, AB = A.subtract_and_intersect_circle(B.center, B.radius)
+    ABc, ABC = AB.subtract_and_intersect_circle(C.center, C.radius)
+    Abc, AbC = Ab.subtract_and_intersect_circle(C.center, C.radius)
+    aB, _ = B.subtract_and_intersect_circle(A.center, A.radius)
+    aBc, aBC = aB.subtract_and_intersect_circle(C.center, C.radius)
+    aC, _ = C.subtract_and_intersect_circle(A.center, A.radius)
+    abC, _ = aC.subtract_and_intersect_circle(B.center, B.radius)    
+    return [Abc, aBc, ABc, abC, AbC, aBC, ABC]
 
 
 def compute_venn3_colors(set_colors):
@@ -525,7 +278,7 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
 def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha=0.4, normalize_to=1.0, ax=None):
     '''Plots a 3-set area-weighted Venn diagram.
     The subsets parameter can be one of the following:
-	 - A list (or a tuple), containing three set objects.
+     - A list (or a tuple), containing three set objects.
      - A dict, providing sizes of seven diagram regions.
        The regions are identified via three-letter binary codes ('100', '010', etc), hence a valid set could look like:
        {'001': 10, '010': 20, '110':30, ...}. Unmentioned codes are considered to map to 0.
@@ -554,8 +307,8 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     >>> v.get_patch_by_id('100').set_color('white')
     >>> v.get_label_by_id('100').set_text('Unknown')
     >>> v.get_label_by_id('C').set_text('Set C')
-	
-	You can provide sets themselves rather than subset sizes:
+    
+    You can provide sets themselves rather than subset sizes:
     >>> v = venn3(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
     >>> print("%0.2f %0.2f %0.2f" % (v.get_circle_radius(0), v.get_circle_radius(1)/v.get_circle_radius(0), v.get_circle_radius(2)/v.get_circle_radius(0)))
     0.24 1.41 2.00
@@ -571,20 +324,35 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     centers, radii = solve_venn3_circles(areas)
     regions = compute_venn3_regions(centers, radii)
     colors = compute_venn3_colors(set_colors)
+    
+    # Remove regions that are too small from the diagram
+    MIN_REGION_SIZE = 1e-4
+    for i in range(len(regions)):
+        if regions[i].size() < MIN_REGION_SIZE and subsets[i] == 0:
+            regions[i] = VennEmptyRegion()
+    
+    # There is a rare case (Issue #12) when the middle region is visually empty
+    # (the positioning of the circles does not let them intersect), yet the corresponding value is not 0.
+    # we address it separately here by positioning the label of that empty region in a custom way
+    if isinstance(regions[6], VennEmptyRegion) and subsets[6] > 0:
+        intersections = [circle_circle_intersection(centers[i], radii[i], centers[j], radii[j]) for (i, j) in [(0, 1), (1, 2), (2, 0)]]
+        middle_pos = np.mean([i[0] for i in intersections], 0)
+        regions[6] = VennEmptyRegion(middle_pos)
 
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
     
     # Create and add patches and text
-    patches = [make_venn3_region_patch(r) for r in regions]
+    patches = [r.make_patch() for r in regions]
     for (p, c) in zip(patches, colors):
         if p is not None:
             p.set_facecolor(c)
             p.set_edgecolor('none')
             p.set_alpha(alpha)
             ax.add_patch(p)
-    subset_labels = [ax.text(r[2][0], r[2][1], str(s), va='center', ha='center') if r is not None else None for (r, s) in zip(regions, subsets)]
+    label_positions = [r.label_position() for r in regions]    
+    subset_labels = [ax.text(lbl[0], lbl[1], str(s), va='center', ha='center') if lbl is not None else None for (lbl, s) in zip(label_positions, subsets)]
 
     # Position labels
     if set_labels is not None:

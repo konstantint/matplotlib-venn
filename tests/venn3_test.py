@@ -107,24 +107,3 @@ def test_circle_circle_intersection():
             assert abs(norm(res[1] - res2[0])) < tol
     
 
-def test_compute_venn3_regions():
-    from numpy import mean
-    from numpy.linalg import norm
-    coords = array([[-1, 0], [1, 0], [0, -1]], float)
-    radii  = [2, 2, 2]
-    regions = compute_venn3_regions(coords, radii)
-    
-    region_signatures = [(True, False, False), (False, True, False), (True, True, False), 
-                         (False, False, True),  (True, False, True), (False, True, True), (True, True, True)]
-                
-    for i in range(len(regions)):
-        pts, arcs, lbl = regions[i]
-        assert len(pts) == 3
-        assert len(arcs) == 3
-        # Compute for each point which circles it lies upon
-        point_circle_relation = array([[norm(c-pt) < r + tol for (c, r) in zip(coords, radii)] for pt in pts])
-        # Assert that each point lies at least on one circle
-        assert all([any(p) for p in point_circle_relation])
-        # Find which circles contain all the points in the region
-        region_signature = tuple([all(point_circle_relation[:,j]) for j in range(3)])
-        assert region_signature == region_signatures[i]
