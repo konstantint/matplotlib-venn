@@ -1,3 +1,8 @@
+Version 0.11
+------------
+
+    - Fixed issue #17. This would change the previous layout of circles in certain pathological cases.
+
 Version 0.10
 ------------
 

@@ -111,7 +111,8 @@ def solve_venn3_circles(venn_areas):
         for i in range(3):
             i, j, k = (i, (i + 1) % 3, (i + 2) % 3)
             if dists[i] > dists[j] + dists[k]:
-                dists[i] = 0.8 * (dists[j] + dists[k])
+                a, b = (j, k) if dists[j] < dists[k] else (k, j)
+                dists[i] = dists[b] + dists[a]*0.8
                 warnings.warn("Bad circle positioning")
         coords = position_venn3_circles_generic(radii, dists)
     elif num_nonzero == 2:
