@@ -16,17 +16,12 @@ from setuptools.command.test import test as TestCommand
 
 
 class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
     def run_tests(self):
         import sys
         import pytest  # import here, cause outside the eggs aren't loaded
         sys.exit(pytest.main(self.test_args))
 
-version = '0.11'
+version = '0.11.1'
 
 setup(name='matplotlib-venn',
       version=version,
