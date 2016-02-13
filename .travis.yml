@@ -1,12 +1,23 @@
 language: python
 python:
   - "2.7"
-virtualenv:
-  system_site_packages: true
+  - "3.4"
+  - "3.5"
+
+# Travis set-up logic borrowed from https://github.com/soft-matter/trackpy/blob/master/.travis.yml
 before_install:
-  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib 
-    # (NB: We can't test Python 3 on Travis-CI so far, due to lack of python3-matplotlib)
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p /home/travis/mc
+  - export PATH=/home/travis/mc/bin:$PATH
+
 install:
-  - pip install pytest
+  - conda update --yes conda
+  - conda create -n testenv --yes pip setuptools numpy scipy matplotlib pytest python=$TRAVIS_PYTHON_VERSION
+  - source activate testenv
+  - which python
+  - conda info
+  - conda list
+
 script:
   - py.test
