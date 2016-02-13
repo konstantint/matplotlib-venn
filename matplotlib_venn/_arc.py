@@ -345,7 +345,7 @@ class Arc(object):
         [array([ 0.5      ,  0.866...])]
         >>> a.intersect_arc(Arc((1, 0), 1, 121, 239, True))
         []
-        >>> a.intersect_arc(Arc((1, 0), 1, 120, 240, True))
+        >>> a.intersect_arc(Arc((1, 0), 1, 120-tol, 240+tol, True))     # Without -tol and +tol the results differ on different architectures due to rounding (see Debian #813782).
         [array([ 0.5      , -0.866...]), array([ 0.5      ,  0.866...])]
         '''
         intersections = self.intersect_circle(arc.center, arc.radius)

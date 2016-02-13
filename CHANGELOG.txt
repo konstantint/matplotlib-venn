@@ -1,7 +1,8 @@
-Version 0.11.1
+Version 0.11.2
 --------------
 
     - Fixes issue #24
+    - Addresses Debian bug #813782
 
 Version 0.11
 ------------
