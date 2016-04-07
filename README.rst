@@ -116,6 +116,11 @@ three sets of objects::
     plt.show()
 
 
+Questions
+---------
+* If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_, chances are high you'll get an answer from the maintainer of this package.
+
+
 See also
 --------
 
