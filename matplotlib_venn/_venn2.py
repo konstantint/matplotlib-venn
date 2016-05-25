@@ -12,6 +12,7 @@ import sys, os
 if 'py.test' in os.path.basename(sys.argv[0]): # (XXX: Ugly hack)
     import matplotlib
     matplotlib.use('Agg')
+from collections import Counter
 
 import numpy as np
 import warnings
@@ -89,7 +90,7 @@ def compute_venn2_regions(centers, radii):
     '''
     Returns a triple of VennRegion objects, describing the three regions of the diagram, corresponding to sets
     (Ab, aB, AB)
-    
+
     >>> centers, radii = solve_venn2_circles((1, 1, 0.5))
     >>> regions = compute_venn2_regions(centers, radii)
     '''
@@ -117,7 +118,7 @@ def compute_venn2_subsets(a, b):
     '''
     Given two set objects, computes the sizes of (a & ~b, b & ~a, a & b).
     Returns the result as a tuple.
-    
+
     >>> compute_venn2_subsets(set([1,2,3,4]), set([2,3,4,5,6]))
     (1, 2, 3)
     >>> compute_venn2_subsets(set([]), set([]))
@@ -129,7 +130,13 @@ def compute_venn2_subsets(a, b):
     >>> compute_venn2_subsets(set([1,2]), set([1]))
     (1, 0, 1)
     '''
-    return (len(a - b), len(b - a), len(a.intersection(b)))
+    if not ((type(a) == type(b) == set) or (type(a) == type(b) == Counter)):
+        raise Exception("The subsets must be either of type set or Counter.")
+    else:
+        if type(a) == type(b) == set:
+            return (len(a - b), len(b - a), len(a.intersection(b)))
+        else:
+            return (sum((a - b).values()), sum((b - a).values()), sum((a & b).values()))
 
 
 def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
@@ -150,7 +157,7 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         subsets = compute_venn2_subsets(*subsets)
     areas = compute_venn2_areas(subsets, normalize_to)
     centers, radii = solve_venn2_circles(areas)
-    
+
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
@@ -180,9 +187,9 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     with the overall fiture size) may be useful to fit the text labels better.
     The return value is a ``VennDiagram`` object, that keeps references to the ``Text`` and ``Patch`` objects used on the plot
     and lets you know the centers and radii of the circles, if you need it.
-    
+
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
-    
+
     >>> from matplotlib_venn import *
     >>> v = venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'))
     >>> c = venn2_circles(subsets=(1, 1, 1), linestyle='dashed')
@@ -190,7 +197,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     >>> v.get_patch_by_id('10').set_color('white')
     >>> v.get_label_by_id('10').set_text('Unknown')
     >>> v.get_label_by_id('A').set_text('Set A')
-    
+
     You can provide sets themselves rather than subset sizes:
     >>> v = venn2(subsets=[set([1,2]), set([2,3,4,5])], set_labels = ('A', 'B'))
     >>> c = venn2_circles(subsets=[set([1,2]), set([2,3,4,5])], linestyle='dashed')
@@ -209,7 +216,7 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
-    
+
     # Create and add patches and subset labels
     patches = [r.make_patch() for r in regions]
     for (p, c) in zip(patches, colors):

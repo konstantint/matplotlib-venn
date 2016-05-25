@@ -7,6 +7,8 @@ http://kt.era.ee/
 
 Licensed under MIT license.
 '''
+from collections import Counter
+
 import numpy as np
 import warnings
 
@@ -26,7 +28,7 @@ def compute_venn3_areas(diagram_areas, normalize_to=1.0, _minimal_area=1e-6):
      (Abc, aBc, ABc, abC, AbC, aBC, ABC)
     (i.e. last element corresponds to the size of intersection A&B&C).
     The return value is a list of areas (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc),
-    such that the total area of all circles is normalized to normalize_to. 
+    such that the total area of all circles is normalized to normalize_to.
     If the area of any circle is smaller than _minimal_area, makes it equal to _minimal_area.
 
     Assumes all input values are nonnegative (to be more precise, all areas are passed through and abs() function)
@@ -197,7 +199,7 @@ def compute_venn3_regions(centers, radii):
     aB, _ = B.subtract_and_intersect_circle(A.center, A.radius)
     aBc, aBC = aB.subtract_and_intersect_circle(C.center, C.radius)
     aC, _ = C.subtract_and_intersect_circle(A.center, A.radius)
-    abC, _ = aC.subtract_and_intersect_circle(B.center, B.radius)    
+    abC, _ = aC.subtract_and_intersect_circle(B.center, B.radius)
     return [Abc, aBc, ABc, abC, AbC, aBC, ABC]
 
 
@@ -217,10 +219,10 @@ def compute_venn3_colors(set_colors):
 
 def compute_venn3_subsets(a, b, c):
     '''
-    Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
+    Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....),
     as needed by the subsets parameter of venn3 and venn3_circles.
     Returns the result as a tuple.
-    
+
     >>> compute_venn3_subsets(set([1,2,3]), set([2,3,4]), set([3,4,5,6]))
     (1, 0, 1, 2, 0, 1, 1)
     >>> compute_venn3_subsets(set([]), set([]), set([]))
@@ -236,13 +238,25 @@ def compute_venn3_subsets(a, b, c):
     >>> compute_venn3_subsets(set([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
     (1, 1, 1, 1, 1, 1, 1)
     '''
-    return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
-        len(b - (a.union(c))),
-        len(a.intersection(b) - c),
-        len(c - (a.union(b))),
-        len(a.intersection(c) - b),
-        len(b.intersection(c) - a),
-        len(a.intersection(b).intersection(c)))
+    if not ((type(a) == type(b) == type(c) == set) or (type(a) == type(b) == type(c) == Counter)):
+        raise Exception("The subsets must be either of type set or Counter.")
+    else:
+        if type(a) == type(b) == type(c) == set:
+            return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
+                len(b - (a.union(c))),
+                len(a.intersection(b) - c),
+                len(c - (a.union(b))),
+                len(a.intersection(c) - b),
+                len(b.intersection(c) - a),
+                len(a.intersection(b).intersection(c)))
+        else:
+            return (sum((a - (b | c)).values()),  # TODO: This is certainly not the most efficient way to compute.
+                sum((b - (a | c)).values()),
+                sum(((a & b) - c).values()),
+                sum((c - (a | b)).values()),
+                sum(((a & c) - b).values()),
+                sum(((b & c) - a).values()),
+                sum((a & b & c).values()))
 
 
 def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
@@ -261,10 +275,10 @@ def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
         subsets = [subsets.get(t, 0) for t in ['100', '010', '110', '001', '101', '011', '111']]
     elif len(subsets) == 3:
         subsets = compute_venn3_subsets(*subsets)
-        
+
     areas = compute_venn3_areas(subsets, normalize_to)
     centers, radii = solve_venn3_circles(areas)
-    
+
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
@@ -298,7 +312,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
 
     Note: if some of the circles happen to have zero area, you will probably not get a nice picture.
-    
+
     >>> import matplotlib # (The first two lines prevent the doctest from falling when TCL not installed. Not really necessary in most cases)
     >>> matplotlib.use('Agg')
     >>> from matplotlib_venn import *
@@ -308,7 +322,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     >>> v.get_patch_by_id('100').set_color('white')
     >>> v.get_label_by_id('100').set_text('Unknown')
     >>> v.get_label_by_id('C').set_text('Set C')
-    
+
     You can provide sets themselves rather than subset sizes:
     >>> v = venn3(subsets=[set([1,2]), set([2,3,4,5]), set([4,5,6,7,8,9,10,11])])
     >>> print("%0.2f %0.2f %0.2f" % (v.get_circle_radius(0), v.get_circle_radius(1)/v.get_circle_radius(0), v.get_circle_radius(2)/v.get_circle_radius(0)))
@@ -325,13 +339,13 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     centers, radii = solve_venn3_circles(areas)
     regions = compute_venn3_regions(centers, radii)
     colors = compute_venn3_colors(set_colors)
-    
+
     # Remove regions that are too small from the diagram
     MIN_REGION_SIZE = 1e-4
     for i in range(len(regions)):
         if regions[i].size() < MIN_REGION_SIZE and subsets[i] == 0:
             regions[i] = VennEmptyRegion()
-    
+
     # There is a rare case (Issue #12) when the middle region is visually empty
     # (the positioning of the circles does not let them intersect), yet the corresponding value is not 0.
     # we address it separately here by positioning the label of that empty region in a custom way
@@ -343,7 +357,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
     if ax is None:
         ax = gca()
     prepare_venn_axes(ax, centers, radii)
-    
+
     # Create and add patches and text
     patches = [r.make_patch() for r in regions]
     for (p, c) in zip(patches, colors):
@@ -352,7 +366,7 @@ def venn3(subsets, set_labels=('A', 'B', 'C'), set_colors=('r', 'g', 'b'), alpha
             p.set_edgecolor('none')
             p.set_alpha(alpha)
             ax.add_patch(p)
-    label_positions = [r.label_position() for r in regions]    
+    label_positions = [r.label_position() for r in regions]
     subset_labels = [ax.text(lbl[0], lbl[1], str(s), va='center', ha='center') if lbl is not None else None for (lbl, s) in zip(label_positions, subsets)]
 
     # Position labels
