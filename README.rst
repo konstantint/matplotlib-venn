@@ -37,7 +37,7 @@ and draw a two-circle venn diagram with respective region areas. In
 the particular example, the region, corresponding to subset ``A and
 not B`` will be three times larger in area than the region,
 corresponding to subset ``A and B``. Alternatively, you can simply
-provide a list of two ``set`` objects instead (new in version 0.7),
+provide a list of two ``set`` or ``Counter`` (i.e. multi-set) objects instead (new in version 0.7),
 e.g.::
 
     venn2([set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])])
@@ -45,7 +45,7 @@ e.g.::
 Similarly, the functions ``venn3`` and ``venn3_circles`` take a
 7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC,
 ABC)``, and draw a three-circle area-weighted venn
-diagram. Alternatively, you can provide a list of three set objects
+diagram. Alternatively, you can provide a list of three ``set`` or ``Counter`` objects
 (rather than counting sizes for all 7 subsets).
 
 The functions ``venn2_circles`` and ``venn3_circles`` draw just the

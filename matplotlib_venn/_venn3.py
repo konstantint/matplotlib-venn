@@ -9,6 +9,7 @@ Licensed under MIT license.
 '''
 import numpy as np
 import warnings
+from collections import Counter
 
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.path import Path
@@ -217,12 +218,20 @@ def compute_venn3_colors(set_colors):
 
 def compute_venn3_subsets(a, b, c):
     '''
-    Given three set objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
+    Given three set or Counter objects, computes the sizes of (a & ~b & ~c, ~a & b & ~c, a & b & ~c, ....), 
     as needed by the subsets parameter of venn3 and venn3_circles.
     Returns the result as a tuple.
     
     >>> compute_venn3_subsets(set([1,2,3]), set([2,3,4]), set([3,4,5,6]))
     (1, 0, 1, 2, 0, 1, 1)
+    >>> compute_venn3_subsets(Counter([1,2,3]), Counter([2,3,4]), Counter([3,4,5,6]))
+    (1, 0, 1, 2, 0, 1, 1)
+    >>> compute_venn3_subsets(Counter([1,1,1]), Counter([1,1,1]), Counter([1,1,1,1]))
+    (0, 0, 0, 1, 0, 0, 3)
+    >>> compute_venn3_subsets(Counter([1,1,2,2,3,3]), Counter([2,2,3,3,4,4]), Counter([3,3,4,4,5,5,6,6]))
+    (2, 0, 2, 4, 0, 2, 2)
+    >>> compute_venn3_subsets(Counter([1,2,3]), Counter([2,2,3,3,4,4]), Counter([3,3,4,4,4,5,5,6]))
+    (1, 1, 1, 4, 0, 3, 1)
     >>> compute_venn3_subsets(set([]), set([]), set([]))
     (0, 0, 0, 0, 0, 0, 0)
     >>> compute_venn3_subsets(set([1]), set([]), set([]))
@@ -231,18 +240,29 @@ def compute_venn3_subsets(a, b, c):
     (0, 1, 0, 0, 0, 0, 0)
     >>> compute_venn3_subsets(set([]), set([]), set([1]))
     (0, 0, 0, 1, 0, 0, 0)
+    >>> compute_venn3_subsets(Counter([]), Counter([]), Counter([1]))
+    (0, 0, 0, 1, 0, 0, 0)
     >>> compute_venn3_subsets(set([1]), set([1]), set([1]))
     (0, 0, 0, 0, 0, 0, 1)
     >>> compute_venn3_subsets(set([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
     (1, 1, 1, 1, 1, 1, 1)
+    >>> compute_venn3_subsets(Counter([1,3,5,7]), Counter([2,3,6,7]), Counter([4,5,6,7]))
+    (1, 1, 1, 1, 1, 1, 1)
+    >>> compute_venn3_subsets(Counter([1,3,5,7]), set([2,3,6,7]), set([4,5,6,7]))
+    Traceback (most recent call last):
+    ...
+    ValueError: All arguments must be of the same type
     '''
-    return (len(a - (b.union(c))),  # TODO: This is certainly not the most efficient way to compute.
-        len(b - (a.union(c))),
-        len(a.intersection(b) - c),
-        len(c - (a.union(b))),
-        len(a.intersection(c) - b),
-        len(b.intersection(c) - a),
-        len(a.intersection(b).intersection(c)))
+    if not (type(a) == type(b) == type(c)):
+        raise ValueError("All arguments must be of the same type")
+    set_size = len if type(a) != Counter else lambda x: sum(x.values())   # We cannot use len to compute the cardinality of a Counter
+    return (set_size(a - (b | c)),  # TODO: This is certainly not the most efficient way to compute.
+        set_size(b - (a | c)),
+        set_size((a & b) - c),
+        set_size(c - (a | b)),
+        set_size((a & c) - b),
+        set_size((b & c) - a),
+        set_size(a & b & c))
 
 
 def venn3_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
