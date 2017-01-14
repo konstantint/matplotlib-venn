@@ -15,4 +15,19 @@ def test_issue_17():
     b = mv._venn3.solve_venn3_circles(venn_areas)
     assert not np.any(np.isnan(b[0]))
 
+
+def test_pr_28():
+    import matplotlib_venn as mv
+    v = mv.venn3((1, 2, 3, 4, 5, 6, 7), subset_label_formatter = None)
+    assert v.get_label_by_id('010').get_text() == '2'
+    v = mv.venn3((1, 2, 3, 4, 5, 6, 7), subset_label_formatter = lambda x: 'Value: %+0.3f' % (x / 100.0))
+    assert v.get_label_by_id('010').get_text() == 'Value: +0.020'
+    v = mv.venn2((1, 2, 3), subset_label_formatter = None)
+    assert v.get_label_by_id('01').get_text() == '2'
+    v = mv.venn2((1, 2, 3), subset_label_formatter = lambda x: 'Value: %+0.3f' % (x / 100.0))
+    assert v.get_label_by_id('01').get_text() == 'Value: +0.020'
     
+    v = mv.venn3_unweighted((1, 2, 3, 4, 5, 6, 7), subset_label_formatter = lambda x: 'Value: %+0.3f' % (x / 100.0))
+    assert v.get_label_by_id('010').get_text() == 'Value: +0.020'
+    v = mv.venn2_unweighted((1, 2, 3), subset_label_formatter = lambda x: 'Value: %+0.3f' % (x / 100.0))
+    assert v.get_label_by_id('01').get_text() == 'Value: +0.020'
