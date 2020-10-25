@@ -11,7 +11,6 @@ Licensed under MIT license.
 '''
 
 from setuptools import setup, find_packages
-
 from setuptools.command.test import test as TestCommand
 
 
@@ -21,7 +20,9 @@ class PyTest(TestCommand):
         import pytest  # import here, cause outside the eggs aren't loaded
         sys.exit(pytest.main(self.test_args))
 
-version = '0.11.5'
+version = [ln.split("'")[1]
+           for ln in open('matplotlib_venn/__init__.py')
+		   if '__version__' in ln][0]
 
 setup(name='matplotlib-venn',
       version=version,
