@@ -65,11 +65,11 @@ def solve_venn2_circles(venn_areas):
     In particular, the first two values must be positive.
 
     >>> c, r = solve_venn2_circles((1, 1, 0))
-    >>> np.round(r, 3)
-    array([ 0.564,  0.564])
+    >>> np.round(r, 3).tolist()
+    [0.564, 0.564]
     >>> c, r = solve_venn2_circles(compute_venn2_areas((1, 2, 3)))
-    >>> np.round(r, 3)
-    array([ 0.461,  0.515])
+    >>> np.round(r, 3).tolist()
+    [0.461, 0.515]
     '''
     (A_a, A_b, A_ab) = list(map(float, venn_areas))
     r_a, r_b = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi)
@@ -106,8 +106,8 @@ def compute_venn2_colors(set_colors):
     Given two base colors, computes combinations of colors corresponding to all regions of the venn diagram.
     returns a list of 3 elements, providing colors for regions (10, 01, 11).
 
-    >>> compute_venn2_colors(('r', 'g'))
-    (array([ 1.,  0.,  0.]), array([ 0. ,  0.5,  0. ]), array([ 0.7 ,  0.35,  0.  ]))
+    >>> str(compute_venn2_colors(('r', 'g'))).replace(' ', '')
+    '(array([1.,0.,0.]),array([0.,0.5,0.]),array([0.7,0.35,0.]))'
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]

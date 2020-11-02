@@ -81,11 +81,11 @@ def solve_venn3_circles(venn_areas):
     three pairwise intersections).
 
     >>> c, r = solve_venn3_circles((1, 1, 1, 0, 0, 0, 0))
-    >>> np.round(r, 3)
-    array([ 0.564,  0.564,  0.564])
+    >>> np.round(r, 3).tolist()
+    [0.564, 0.564, 0.564]
     >>> c, r = solve_venn3_circles(compute_venn3_areas((1, 2, 40, 30, 4, 40, 4)))
-    >>> np.round(r, 3)
-    array([ 0.359,  0.476,  0.453])
+    >>> np.round(r, 3).tolist()
+    [0.359, 0.476, 0.453]
     '''
     (A_a, A_b, A_c, A_ab, A_bc, A_ac, A_abc) = list(map(float, venn_areas))
     r_a, r_b, r_c = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi), np.sqrt(A_c / np.pi)
@@ -207,8 +207,8 @@ def compute_venn3_colors(set_colors):
     Given three base colors, computes combinations of colors corresponding to all regions of the venn diagram.
     returns a list of 7 elements, providing colors for regions (100, 010, 110, 001, 101, 011, 111).
 
-    >>> compute_venn3_colors(['r', 'g', 'b'])
-    (array([ 1.,  0.,  0.]),..., array([ 0.4,  0.2,  0.4]))
+    >>> str(compute_venn3_colors(['r', 'g', 'b'])).replace(' ', '')
+    '(array([1.,0.,0.]),...,array([0.4,0.2,0.4]))'
     '''
     ccv = ColorConverter()
     base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]

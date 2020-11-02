@@ -63,5 +63,13 @@ def exec_ipynb(filename):
                 code = ''.join(cell['input'])
                 if sys.version_info.major == 2:
                     exec("exec code in locals()")
+                elif sys.version_info.minor >= 8:
+                    # Ignore spurious MatplotlibDeprecationWarning
+                    # See: https://github.com/matplotlib/matplotlib/issues/12513
+                    from matplotlib.cbook.deprecation import MatplotlibDeprecationWarning
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore', category=MatplotlibDeprecationWarning)
+                        exec(code, locals())
                 else:
                     exec(code, locals())

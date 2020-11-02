@@ -155,12 +155,12 @@ class Arc(object):
         Converts a given angle in degrees to the point coordinates on the arc's circle.
         Inverse of point_to_angle.
         
-        >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(0)
-        array([ 2.,  1.])
-        >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(90)
-        array([ 1.,  2.])
-        >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(-270)
-        array([ 1.,  2.])
+        >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(0).tolist()
+        [2.0, 1.0]
+        >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(90).tolist()
+        [1.0, 2.0]
+        >>> np.all(np.isclose(Arc((1, 1), 1, 0, 0, True).angle_as_point(-270), [1.0, 2.0]))
+        True
         '''
         angle_rad = angle * np.pi / 180.0
         return self.center + self.radius * np.array([np.cos(angle_rad), np.sin(angle_rad)])
@@ -169,10 +169,10 @@ class Arc(object):
         '''
         Returns a 2x1 numpy array with the coordinates of the arc's start point.
         
-        >>> Arc((0, 0), 1, 0, 0, True).start_point()
-        array([ 1.,  0.])
-        >>> Arc((0, 0), 1, 45, 0, True).start_point()
-        array([ 0.707...,  0.707...])
+        >>> Arc((0, 0), 1, 0, 0, True).start_point().tolist()
+        [1.0, 0.0]
+        >>> Arc((0, 0), 1, 45, 0, True).start_point().tolist()
+        [0.707..., 0.707...]
         '''
         return self.angle_as_point(self.from_angle)
 
@@ -280,22 +280,22 @@ class Arc(object):
         Intersection with the same circle as the arc's own (which means infinitely many points usually) is reported as no intersection at all.
         
         >>> a = Arc((0, 0), 1, -60, 60, True)
-        >>> a.intersect_circle((1, 0), 1)
-        [array([ 0.5..., -0.866...]), array([ 0.5...,  0.866...])]
+        >>> str(a.intersect_circle((1, 0), 1)).replace(' ', '')
+        '[array([0.5...,-0.866...]),array([0.5...,0.866...])]'
         >>> a.intersect_circle((0.9, 0), 1)
         []
-        >>> a.intersect_circle((1,-0.1), 1)
-        [array([ 0.586...,  0.810...])]
-        >>> a.intersect_circle((1, 0.1), 1)
-        [array([ 0.586..., -0.810...])]
+        >>> str(a.intersect_circle((1,-0.1), 1)).replace(' ', '')
+        '[array([0.586...,0.810...])]'
+        >>> str(a.intersect_circle((1, 0.1), 1)).replace(' ', '')
+        '[array([0.586...,-0.810...])]'
         >>> a.intersect_circle((0, 0), 1)  # Infinitely many intersection points
         []
-        >>> a.intersect_circle((2, 0), 1)  # Touching point, hence repeated twice
-        [array([ 1.,  0.]), array([ 1.,  0.])]
+        >>> str(a.intersect_circle((2, 0), 1)).replace(' ', '')  # Touching point, hence repeated twice
+        '[array([1.,0.]),array([1.,0.])]'
         
         >>> a = Arc((0, 0), 1, 60, -60, False) # Same arc, different direction
-        >>> a.intersect_circle((1, 0), 1)
-        [array([ 0.5...,  0.866...]), array([ 0.5..., -0.866...])]
+        >>> str(a.intersect_circle((1, 0), 1)).replace(' ', '')
+        '[array([0.5...,0.866...]),array([0.5...,-0.866...])]'
         
         >>> a = Arc((0, 0), 1, 120, -120, True)
         >>> a.intersect_circle((-1, 0), 1)
@@ -339,14 +339,14 @@ class Arc(object):
         Intersection with the arc along the same circle (which means infinitely many points usually) is reported as no intersection at all.
         
         >>> a = Arc((0, 0), 1, -90, 90, True)
-        >>> a.intersect_arc(Arc((1, 0), 1, 90, 270, True))
-        [array([ 0.5      , -0.866...]), array([ 0.5      ,  0.866...])]
-        >>> a.intersect_arc(Arc((1, 0), 1, 90, 180, True))
-        [array([ 0.5      ,  0.866...])]
+        >>> str(a.intersect_arc(Arc((1, 0), 1, 90, 270, True))).replace(' ', '')
+        '[array([0.5,-0.866...]),array([0.5,0.866...])]'
+        >>> str(a.intersect_arc(Arc((1, 0), 1, 90, 180, True))).replace(' ', '')
+        '[array([0.5,0.866...])]'
         >>> a.intersect_arc(Arc((1, 0), 1, 121, 239, True))
         []
-        >>> a.intersect_arc(Arc((1, 0), 1, 120-tol, 240+tol, True))     # Without -tol and +tol the results differ on different architectures due to rounding (see Debian #813782).
-        [array([ 0.5      , -0.866...]), array([ 0.5      ,  0.866...])]
+        >>> str(a.intersect_arc(Arc((1, 0), 1, 120-tol, 240+tol, True))).replace(' ', '')  # Without -tol and +tol the results differ on different architectures due to rounding (see Debian #813782).
+        '[array([0.5,-0.866...]),array([0.5,0.866...])]'
         '''
         intersections = self.intersect_circle(arc.center, arc.radius)
         isections = [pt for pt in intersections if arc.contains_angle_degrees(arc.point_as_angle(pt))]

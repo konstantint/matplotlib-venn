@@ -76,10 +76,10 @@ def mix_colors(col1, col2, col3=None):
     
     Inputs are (up to) three RGB triples of floats 0.0-1.0 given as numpy arrays.
     
-    >>> mix_colors(np.array([1.0, 0., 0.]), np.array([1.0, 0., 0.])) # doctest: +NORMALIZE_WHITESPACE
-    array([ 1.,  0.,  0.])
-    >>> mix_colors(np.array([1.0, 1., 0.]), np.array([1.0, 0.9, 0.]), np.array([1.0, 0.8, 0.1])) # doctest: +NORMALIZE_WHITESPACE
-    array([ 1. ,  1. , 0.04])    
+    >>> mix_colors(np.array([1.0, 0., 0.]), np.array([1.0, 0., 0.])).tolist()
+    [1.0, 0.0, 0.0]
+    >>> np.round(mix_colors(np.array([1.0, 1., 0.]), np.array([1.0, 0.9, 0.]), np.array([1.0, 0.8, 0.1])), 3).tolist()
+    [1.0, 1.0, 0.04]
     '''
     if col3 is None:
         mix_color = 0.7 * (col1 + col2)

@@ -3,6 +3,9 @@ python:
   - "2.7"
   - "3.4"
   - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
 
 # Travis set-up logic borrowed from https://github.com/soft-matter/trackpy/blob/master/.travis.yml
 before_install:

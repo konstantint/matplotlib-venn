@@ -79,9 +79,8 @@ def circle_line_intersection(center, r, a, b):
     >>> circle_line_intersection(np.array([0.0, 0.0]), 1, np.array([-1.0, 0.0]), np.array([1.0, 0.0]))
     array([[ 1.,  0.],
            [-1.,  0.]])
-    >>> abs(np.round(circle_line_intersection(np.array([1.0, 1.0]), np.sqrt(2), np.array([-1.0, 1.0]), np.array([1.0, -1.0])), 6))
-    array([[ 0.,  0.],
-           [ 0.,  0.]])
+    >>> abs(np.round(circle_line_intersection(np.array([1.0, 1.0]), np.sqrt(2), np.array([-1.0, 1.0]), np.array([1.0, -1.0])), 6)).tolist()
+    [[0.0, 0.0], [0.0, 0.0]]
     '''
     s = b - a
     # Quadratic eqn coefs
@@ -140,12 +139,10 @@ def circle_circle_intersection(C_a, r_a, C_b, r_b):
     >>> circle_circle_intersection([0, 0], 1, [1, 0], 1) # Two intersection points
     array([[ 0.5      , -0.866...],
            [ 0.5      ,  0.866...]])
-    >>> circle_circle_intersection([0, 0], 1, [2, 0], 1) # Single intersection point (circles touch from outside)
-    array([[ 1.,  0.],
-           [ 1.,  0.]])
-    >>> circle_circle_intersection([0, 0], 1, [0.5, 0], 0.5) # Single intersection point (circles touch from inside)
-    array([[ 1.,  0.],
-           [ 1.,  0.]])
+    >>> circle_circle_intersection([0, 0], 1, [2, 0], 1).tolist() # Single intersection point (circles touch from outside)
+    [[1.0, 0.0], [1.0, 0.0]]
+    >>> circle_circle_intersection([0, 0], 1, [0.5, 0], 0.5).tolist() # Single intersection point (circles touch from inside)
+    [[1.0, 0.0], [1.0, 0.0]]
     >>> circle_circle_intersection([0, 0], 1, [0, 0], 1) is None # Infinite number of intersections (circles coincide)
     True
     >>> circle_circle_intersection([0, 0], 1, [0, 0.1], 0.8) is None # No intersections (one circle inside another)

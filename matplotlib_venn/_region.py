@@ -90,8 +90,8 @@ class VennEmptyRegion(VennRegion):
     >>> assert v.make_patch() is None
     >>> assert v.is_empty()
     >>> v = VennEmptyRegion((0, 0))
-    >>> v.label_position()
-    array([ 0.,  0.])
+    >>> v.label_position().tolist()
+    [0.0, 0.0]
     '''
     def __init__(self, label_pos = None):
         self.label_pos = None if label_pos is None else np.asarray(label_pos, float)
@@ -115,8 +115,8 @@ class VennCircleRegion(VennRegion):
     >>> vcr = VennCircleRegion((0, 0), 1)
     >>> vcr.size()
     3.1415...
-    >>> vcr.label_position()
-    array([ 0.,  0.])
+    >>> vcr.label_position().tolist()
+    [0.0, 0.0]
     >>> vcr.make_patch()
     <matplotlib.patches.Circle object at ...>
     >>> sr, ir = vcr.subtract_and_intersect_circle((0.5, 0), 1)
@@ -197,10 +197,10 @@ class VennCircleRegion(VennRegion):
         '''
         The label should be positioned in the center of the circle
         
-        >>> VennCircleRegion((0, 0), 1).label_position()
-        array([ 0.,  0.])
-        >>> VennCircleRegion((-1.2, 3.4), 1).label_position()
-        array([-1.2,  3.4])
+        >>> VennCircleRegion((0, 0), 1).label_position().tolist()
+        [0.0, 0.0]
+        >>> VennCircleRegion((-1.2, 3.4), 1).label_position().tolist()
+        [-1.2, 3.4]
         '''
         return self.center
     
@@ -211,8 +211,8 @@ class VennCircleRegion(VennRegion):
         >>> patch = VennCircleRegion((1, 2), 3).make_patch()
         >>> patch
         <matplotlib.patches.Circle object at ...>
-        >>> patch.center, patch.radius
-        (array([ 1.,  2.]), 3.0)
+        >>> patch.center.tolist(), patch.radius
+        ([1.0, 2.0], 3.0)
         '''
         return Circle(self.center, self.radius)
 
