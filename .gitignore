@@ -5,3 +5,4 @@ dist/
 Temp.ipynb
 .ipynb_checkpoints
 *.komodoproject
+venv/

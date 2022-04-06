@@ -1,3 +1,8 @@
+Version 0.11.7
+--------------
+
+    - Fixed Travis-CI-related error messages.
+
 Version 0.11.6
 --------------
 
