@@ -9,6 +9,8 @@ Licensed under MIT license.
 '''
 import json
 import sys
+
+import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.pyplot import scatter
 
@@ -65,3 +67,9 @@ def exec_ipynb(filename):
                     exec("exec code in locals()")
                 else:
                     exec(code, locals())
+
+                # Explicitly close any figures created by this cell, which
+                # would normally (in a notebook) be done by the
+                # matplotlib-inline backend. This prevents a warning about "too
+                # many figures opened" from Matplotlib.
+                plt.close('all')
