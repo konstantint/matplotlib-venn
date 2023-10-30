@@ -25,6 +25,7 @@ from matplotlib_venn._math import *
 from matplotlib_venn._common import *
 from matplotlib_venn._region import VennCircleRegion
 
+from typing import Union, List, Tuple, Optional
 
 def compute_venn2_areas(diagram_areas, normalize_to=1.0):
     '''
@@ -180,7 +181,7 @@ def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle
     return result
 
 
-def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None, subset_label_formatter=None):
+def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), radii: Union[None, float, int, Tuple[Union[float, int]]] = None, alpha=0.4, normalize_to=1.0, ax=None, subset_label_formatter=None):
     '''Plots a 2-set area-weighted Venn diagram.
     The subsets parameter can be one of the following:
      - A list (or a tuple) containing two set objects.
@@ -227,7 +228,39 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
         subset_label_formatter = str
 
     areas = compute_venn2_areas(subsets, normalize_to)
-    centers, radii = solve_venn2_circles(areas)
+
+    # calculate radii
+    if radii is not None:
+        if isinstance(radii, tuple):
+            if any([r < 0 for r in radii]):
+                raise ValueError("radii must be non-negative")
+            if len(radii)==1:
+                radii = float(radii[0])
+                radii = (radii, radii)
+            elif len(radii) == 2:
+                radii = tuple(map(float, radii))
+            elif len(radii) == 0:
+                radii = None
+            else:
+                raise ValueError("radii tuple must have length 2 or 1")
+        elif isinstance(radii, (float, int)):
+            if radii < 0:
+                raise ValueError("radii must be non-negative")
+            radii = float(radii)
+            radii = (radii, radii)
+        else:
+            raise TypeError("radii must be a tuple or a float or an int")
+
+    # calculate centers and radii
+    if radii is not None:
+        centers, _ = solve_venn2_circles(areas)
+    else:
+        centers, radii = solve_venn2_circles(areas)
+
+    if radii[0] < 0.0:
+        raise ValueError("Negative circle radius detected. Try to adjust the normalize_to parameter")
+    
+
     regions = compute_venn2_regions(centers, radii)
     colors = compute_venn2_colors(set_colors)
 
