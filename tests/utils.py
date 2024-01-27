@@ -9,6 +9,8 @@ Licensed under MIT license.
 '''
 import json
 import sys
+
+import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.pyplot import scatter
 
@@ -63,13 +65,11 @@ def exec_ipynb(filename):
                 code = ''.join(cell['input'])
                 if sys.version_info.major == 2:
                     exec("exec code in locals()")
-                elif sys.version_info.minor >= 5:
-                    # Ignore spurious MatplotlibDeprecationWarning
-                    # See: https://github.com/matplotlib/matplotlib/issues/12513
-                    from matplotlib.cbook.deprecation import MatplotlibDeprecationWarning
-                    import warnings
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings('ignore', category=MatplotlibDeprecationWarning)
-                        exec(code, locals())
                 else:
                     exec(code, locals())
+
+                # Explicitly close any figures created by this cell, which
+                # would normally (in a notebook) be done by the
+                # matplotlib-inline backend. This prevents a warning about "too
+                # many figures opened" from Matplotlib.
+                plt.close('all')
