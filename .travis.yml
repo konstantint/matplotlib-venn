@@ -2,7 +2,7 @@ dist: focal
 language: python
 python:
   - "2.7"
-  - "3.4"
+  #- "3.4" # Not available in the 20.04 Ubuntu image
   - "3.5"
   - "3.6"
   - "3.7"
@@ -10,21 +10,13 @@ python:
   - "3.9"
   - "3.10"
   - "3.11"
-
-# Travis set-up logic borrowed from https://github.com/soft-matter/trackpy/blob/master/.travis.yml
-before_install:
-  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p /home/travis/mc
-  - export PATH=/home/travis/mc/bin:$PATH
+  - "3.12"
 
 install:
-  - conda update --yes conda
-  - conda create -n testenv --yes pip setuptools numpy scipy matplotlib pytest python=$TRAVIS_PYTHON_VERSION
-  - source activate testenv
   - which python
-  - conda info
-  - conda list
+  - python -m venv venv
+  - source venv/bin/activate
+  - pip install -e .
 
 script:
   - py.test
