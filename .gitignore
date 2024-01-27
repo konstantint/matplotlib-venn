@@ -6,3 +6,4 @@ Temp.ipynb
 .ipynb_checkpoints
 *.komodoproject
 venv/
+.cache/
