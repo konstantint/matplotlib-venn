@@ -10,10 +10,9 @@ Routines for plotting area-weighted two- and three-circle venn diagrams.
 Installation
 ------------
 
-The simplest way to install the package is via ``easy_install`` or
-``pip``::
+Install the package as usual via ``pip``::
 
-    $ easy_install matplotlib-venn
+    $ python -m pip install matplotlib-venn
 
 Dependencies
 ------------
