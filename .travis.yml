@@ -1,8 +1,6 @@
 dist: focal
 language: python
 python:
-  - "2.7"
-  #- "3.4" # Not available in the 20.04 Ubuntu image
   - "3.5"
   - "3.6"
   - "3.7"
@@ -17,6 +15,7 @@ install:
   - python -m venv venv
   - source venv/bin/activate
   - pip install -e .
+  - pip install pytest
 
 script:
   - py.test
