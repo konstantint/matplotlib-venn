@@ -3,7 +3,10 @@ build/
 dist/
 *.pyc
 Temp.ipynb
+Untitled.ipynb
 .ipynb_checkpoints
 *.komodoproject
 venv/
 .cache/
+.mypy_cache/
+.vscode/
