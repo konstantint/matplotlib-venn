@@ -1,3 +1,13 @@
+Version 1.0.0-alpha
+--------------
+
+    - Dropped support for Python versions below 3.5 (by excluding those versions from CI builds)
+    - Added typing annotations. Some arguments are now a bit more strictly typed.
+      E.g. what previously would accept a List now requires (at least as far as type annotations are concerned) a tuple.
+    - Refactored the code by abstracting away the layout algorithms to allow plug-in customization (Issue #35).
+      This deprecated the `normalize_to` input argument to the venn2 and venn3 functions, and made
+      `venn2_unweighted` and `venn3_unweighted` obsolete. These will be removed in some future version.
+
 Version 0.11.10
 --------------
 

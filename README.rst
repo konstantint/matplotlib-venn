@@ -27,36 +27,41 @@ The package provides four main functions: ``venn2``,
 ``venn2_circles``, ``venn3`` and ``venn3_circles``.
 
 The functions ``venn2`` and ``venn2_circles`` accept as their only
-required argument a 3-element list ``(Ab, aB, AB)`` of subset sizes,
-e.g.::
+required argument a 3-element tuple ``(Ab, aB, AB)`` of subset sizes,
+and draw a two-circle venn diagram with respective region areas, e.g.::
 
     venn2(subsets = (3, 2, 1))
 
-and draw a two-circle venn diagram with respective region areas. In
-the particular example, the region, corresponding to subset ``A and
-not B`` will be three times larger in area than the region,
-corresponding to subset ``A and B``. Alternatively, you can simply
-provide a list of two ``set`` or ``Counter`` (i.e. multi-set) objects instead (new in version 0.7),
-e.g.::
+In this example, the region, corresponding to subset ``A and not B`` will
+be three times larger in area than the region, corresponding to subset ``A and B``.
 
-    venn2([set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])])
+You can also provide a tuple of two ``set`` or ``Counter`` (i.e. multi-set)
+objects instead (new in version 0.7), e.g.::
+
+    venn2((set(['A', 'B', 'C', 'D']), set(['D', 'E', 'F'])))
 
 Similarly, the functions ``venn3`` and ``venn3_circles`` take a
-7-element list of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC,
+7-element tuple of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC,
 ABC)``, and draw a three-circle area-weighted venn
-diagram. Alternatively, you can provide a list of three ``set`` or ``Counter`` objects
-(rather than counting sizes for all 7 subsets).
+diagram. Alternatively, a tuple of three ``set`` or ``Counter`` objects may be provided.
 
-The functions ``venn2_circles`` and ``venn3_circles`` draw just the
-circles, whereas the functions ``venn2`` and ``venn3`` draw the
-diagrams as a collection of colored patches, annotated with text
-labels. In addition (version 0.7+), functions ``venn2_unweighted`` and
-``venn3_unweighted`` draw the Venn diagrams without area-weighting.
+The functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored
+patches, annotated with text labels. The functions ``venn2_circles`` and
+``venn3_circles`` draw just the circles.
+
+Sometimes the area weighing needs to be disabled or manually tuned to achieve a visually
+better result. This can be achieved as follows::
+
+    from matplotlib_venn.layout.venn2 import DefaultLayoutAlgorithm
+    venn2((1,2,3), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1)))
+
+    from matplotlib_venn.layout.venn3 import DefaultLayoutAlgorithm
+    venn3((7,6,5,4,3,2,1), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1,1,1,1,1)))
 
 Note that for a three-circle venn diagram it is not in general
 possible to achieve exact correspondence between the required set
 sizes and region areas, however in most cases the picture will still
-provide a decent indication.
+provide a useful representation.
 
 The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further
 to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``VennDiagram``,
@@ -94,7 +99,7 @@ A more elaborate example::
                  arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5',color='gray'))
     plt.show()
 
-An example with multiple subplots (new in version 0.6)::
+An example with multiple subplots::
 
     from matplotlib_venn import venn2, venn2_circles
     figure, axes = plt.subplots(2, 2)
@@ -117,7 +122,8 @@ three sets of objects::
 
 Questions
 ---------
-* If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_, chances are high you'll get an answer from the maintainer of this package.
+* If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_,
+chances are high you could get an answer from the maintainer of this package.
 
 
 See also

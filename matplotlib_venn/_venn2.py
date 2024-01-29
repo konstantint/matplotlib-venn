@@ -1,4 +1,4 @@
-'''
+"""
 Venn diagram plotting routines.
 Two-circle venn plotter.
 
@@ -6,203 +6,138 @@ Copyright 2012, Konstantin Tretyakov.
 http://kt.era.ee/
 
 Licensed under MIT license.
-'''
+"""
+
 # Make sure we don't try to do GUI stuff when running tests
 import sys, os
-if 'py.test' in os.path.basename(sys.argv[0]): # (XXX: Ugly hack)
-    import matplotlib
-    matplotlib.use('Agg')
 
+if "py.test" in os.path.basename(sys.argv[0]):  # (XXX: Ugly hack)
+    import matplotlib
+
+    matplotlib.use("Agg")
+
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 import numpy as np
 import warnings
 from collections import Counter
 
+from matplotlib.axes import Axes
 from matplotlib.patches import Circle
 from matplotlib.colors import ColorConverter
 from matplotlib.pyplot import gca
 
-from matplotlib_venn._math import *
-from matplotlib_venn._common import *
-from matplotlib_venn._region import VennCircleRegion
+from matplotlib_venn._math import Point2D
+from matplotlib_venn._common import VennDiagram, prepare_venn_axes, mix_colors
+from matplotlib_venn._region import VennRegion, VennCircleRegion
+from matplotlib_venn.layout.api import VennLayout, VennLayoutAlgorithm
+from matplotlib_venn.layout.venn2 import DefaultLayoutAlgorithm
+
+Venn2SubsetSizes = Tuple[float, float, float]
 
 
-def compute_venn2_areas(diagram_areas, normalize_to=1.0):
-    '''
-    The list of venn areas is given as 3 values, corresponding to venn diagram areas in the following order:
-     (Ab, aB, AB)  (i.e. last element corresponds to the size of intersection A&B&C).
-    The return value is a list of areas (A, B, AB), such that the total area is normalized
-    to normalize_to. If total area was 0, returns (1e-06, 1e-06, 0.0)
-
-    Assumes all input values are nonnegative (to be more precise, all areas are passed through and abs() function)
-    >>> compute_venn2_areas((1, 1, 0))
-    (0.5, 0.5, 0.0)
-    >>> compute_venn2_areas((0, 0, 0))
-    (1e-06, 1e-06, 0.0)
-    >>> compute_venn2_areas((1, 1, 1), normalize_to=3)
-    (2.0, 2.0, 1.0)
-    >>> compute_venn2_areas((1, 2, 3), normalize_to=6)
-    (4.0, 5.0, 3.0)
-    '''
-    # Normalize input values to sum to 1
-    areas = np.array(np.abs(diagram_areas), float)
-    total_area = np.sum(areas)
-    if np.abs(total_area) < tol:
-        warnings.warn("Both circles have zero area")
-        return (1e-06, 1e-06, 0.0)
-    else:
-        areas = areas / total_area * normalize_to
-        return (areas[0] + areas[2], areas[1] + areas[2], areas[2])
-
-
-def solve_venn2_circles(venn_areas):
-    '''
-    Given the list of "venn areas" (as output from compute_venn2_areas, i.e. [A, B, AB]),
-    finds the positions and radii of the two circles.
-    The return value is a tuple (coords, radii), where coords is a 2x2 array of coordinates and
-    radii is a 2x1 array of circle radii.
-
-    Assumes the input values to be nonnegative and not all zero.
-    In particular, the first two values must be positive.
-
-    >>> c, r = solve_venn2_circles((1, 1, 0))
-    >>> np.round(r, 3).tolist()
-    [0.564, 0.564]
-    >>> c, r = solve_venn2_circles(compute_venn2_areas((1, 2, 3)))
-    >>> np.round(r, 3).tolist()
-    [0.461, 0.515]
-    '''
-    (A_a, A_b, A_ab) = list(map(float, venn_areas))
-    r_a, r_b = np.sqrt(A_a / np.pi), np.sqrt(A_b / np.pi)
-    radii = np.array([r_a, r_b])
-    if A_ab > tol:
-        # Nonzero intersection
-        coords = np.zeros((2, 2))
-        coords[1][0] = find_distance_by_area(radii[0], radii[1], A_ab)
-    else:
-        # Zero intersection
-        coords = np.zeros((2, 2))
-        coords[1][0] = radii[0] + radii[1] + max(np.mean(radii) * 1.1, 0.2)   # The max here is needed for the case r_a = r_b = 0
-    coords = normalize_by_center_of_mass(coords, radii)
-    return (coords, radii)
-
-
-def compute_venn2_regions(centers, radii):
-    '''
-    Returns a triple of VennRegion objects, describing the three regions of the diagram, corresponding to sets
-    (Ab, aB, AB)
-
-    >>> centers, radii = solve_venn2_circles((1, 1, 0.5))
-    >>> regions = compute_venn2_regions(centers, radii)
-    '''
-    A = VennCircleRegion(centers[0], radii[0])
-    B = VennCircleRegion(centers[1], radii[1])
-    Ab, AB = A.subtract_and_intersect_circle(B.center, B.radius)
-    aB, _ = B.subtract_and_intersect_circle(A.center, A.radius)
-    return (Ab, aB, AB)
-
-
-def compute_venn2_colors(set_colors):
-    '''
-    Given two base colors, computes combinations of colors corresponding to all regions of the venn diagram.
-    returns a list of 3 elements, providing colors for regions (10, 01, 11).
-
-    >>> str(compute_venn2_colors(('r', 'g'))).replace(' ', '')
-    '(array([1.,0.,0.]),array([0.,0.5,0.]),array([0.7,0.35,0.]))'
-    '''
-    ccv = ColorConverter()
-    base_colors = [np.array(ccv.to_rgb(c)) for c in set_colors]
-    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
-
-
-def compute_venn2_subsets(a, b):
-    '''
-    Given two set or Counter objects, computes the sizes of (a & ~b, b & ~a, a & b).
-    Returns the result as a tuple.
-
-    >>> compute_venn2_subsets(set([1,2,3,4]), set([2,3,4,5,6]))
-    (1, 2, 3)
-    >>> compute_venn2_subsets(Counter([1,2,3,4]), Counter([2,3,4,5,6]))
-    (1, 2, 3)
-    >>> compute_venn2_subsets(Counter([]), Counter([]))
-    (0, 0, 0)
-    >>> compute_venn2_subsets(set([]), set([]))
-    (0, 0, 0)
-    >>> compute_venn2_subsets(set([1]), set([]))
-    (1, 0, 0)
-    >>> compute_venn2_subsets(set([1]), set([1]))
-    (0, 0, 1)
-    >>> compute_venn2_subsets(Counter([1]), Counter([1]))
-    (0, 0, 1)
-    >>> compute_venn2_subsets(set([1,2]), set([1]))
-    (1, 0, 1)
-    >>> compute_venn2_subsets(Counter([1,1,2,2,2]), Counter([1,2,3,3]))
-    (3, 2, 2)
-    >>> compute_venn2_subsets(Counter([1,1,2]), Counter([1,2,2]))
-    (1, 1, 2)
-    >>> compute_venn2_subsets(Counter([1,1]), set([]))
-    Traceback (most recent call last):
-    ...
-    ValueError: Both arguments must be of the same type
-    '''
-    if not (type(a) == type(b)):
-        raise ValueError("Both arguments must be of the same type")
-    set_size = len if type(a) != Counter else lambda x: sum(x.values())   # We cannot use len to compute the cardinality of a Counter
-    return (set_size(a - b), set_size(b - a), set_size(a & b))
-
-
-def venn2_circles(subsets, normalize_to=1.0, alpha=1.0, color='black', linestyle='solid', linewidth=2.0, ax=None, **kwargs):
-    '''
+def venn2_circles(
+    subsets: Union[Tuple[set, set], Dict[str, float], Venn2SubsetSizes],
+    normalize_to: Optional[float] = None,
+    alpha: float = 1.0,
+    color: Any = "black",
+    linestyle: str = "solid",
+    linewidth: float = 2.0,
+    ax: Axes = None,
+    layout_algorithm: Optional[VennLayoutAlgorithm] = None,
+    **kwargs
+):
+    """
     Plots only the two circles for the corresponding Venn diagram.
     Useful for debugging or enhancing the basic venn diagram.
-    parameters ``subsets``, ``normalize_to`` and ``ax`` are the same as in venn2()
-    ``kwargs`` are passed as-is to matplotlib.patches.Circle.
-    returns a list of three Circle patches.
+
+    Args:
+        subsets: Same as in `venn2`.
+        normalize_to: Same as in `venn2`.
+        alpha: The alpha parameter of the circle patches.
+        color: The edgecolor of the circle patches (as understood by matplotlib).
+        linestyle: The linestyle of the circle patches.
+        linewidth: The line width of the circle patches.
+        ax: Axis to draw upon, defaults to gca().
+        layout_algorithm: The layout algorithm to be used. Defaults to matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm(normalize_to).
+        **kwargs: passed as-is to matplotlib.patches.Circle.
+
+    Returns:
+        a list of two Circle patches plotted.
 
     >>> c = venn2_circles((1, 2, 3))
     >>> c = venn2_circles({'10': 1, '01': 2, '11': 3}) # Same effect
     >>> c = venn2_circles([set([1,2,3,4]), set([2,3,4,5,6])]) # Also same effect
-    '''
+    """
     if isinstance(subsets, dict):
-        subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
+        subsets = [subsets.get(t, 0) for t in ["10", "01", "11"]]
     elif len(subsets) == 2:
-        subsets = compute_venn2_subsets(*subsets)
-    areas = compute_venn2_areas(subsets, normalize_to)
-    centers, radii = solve_venn2_circles(areas)
+        subsets = _compute_subset_sizes(*subsets)
 
+    if normalize_to is not None:
+        if layout_algorithm is None:
+            warnings.warn(
+                "normalize_to is deprecated. Please use layout_algorithm=matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm(normalize_to) instead."
+            )
+        else:
+            raise ValueError(
+                "normalize_to is deprecated and may not be specified together with a custom layout algorithm."
+            )
+    if layout_algorithm is None:
+        layout_algorithm = DefaultLayoutAlgorithm(normalize_to=normalize_to or 1.0)
+
+    layout = layout_algorithm(subsets)
     if ax is None:
         ax = gca()
-    prepare_venn_axes(ax, centers, radii)
+    prepare_venn_axes(ax, layout.centers, layout.radii)
     result = []
-    for (c, r) in zip(centers, radii):
-        circle = Circle(c, r, alpha=alpha, edgecolor=color, facecolor='none', linestyle=linestyle, linewidth=linewidth, **kwargs)
+    for c, r in zip(layout.centers, layout.radii):
+        circle = Circle(
+            c.asarray(),
+            r,
+            alpha=alpha,
+            edgecolor=color,
+            facecolor="none",
+            linestyle=linestyle,
+            linewidth=linewidth,
+            **kwargs
+        )
         ax.add_patch(circle)
         result.append(circle)
-    return result
+    return tuple(result)
 
 
-def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, normalize_to=1.0, ax=None, subset_label_formatter=None):
-    '''Plots a 2-set area-weighted Venn diagram.
-    The subsets parameter can be one of the following:
-     - A list (or a tuple) containing two set objects.
-     - A dict, providing sizes of three diagram regions.
-       The regions are identified via two-letter binary codes ('10', '01', and '11'), hence a valid set could look like:
-       {'10': 10, '01': 20, '11': 40}. Unmentioned codes are considered to map to 0.
-     - A list (or a tuple) with three numbers, denoting the sizes of the regions in the following order:
-       (10, 01, 11)
+def venn2(
+    subsets: Union[Tuple[set, set], Dict[str, float], Venn2SubsetSizes],
+    set_labels: Optional[Tuple[str, str]] = ("A", "B"),
+    set_colors: Tuple[Any, Any] = ("r", "g"),
+    alpha: float = 0.4,
+    normalize_to: Optional[float] = None,
+    ax: Optional[Axes] = None,
+    subset_label_formatter: Optional[Callable[[float], str]] = None,
+    layout_algorithm: Optional[VennLayoutAlgorithm] = None,
+):
+    """Plots a 2-set area-weighted Venn diagram.
 
-    ``set_labels`` parameter is a list of two strings - set labels. Set it to None to disable set labels.
-    The ``set_colors`` parameter should be a list of two elements, specifying the "base colors" of the two circles.
-    The color of circle intersection will be computed based on those.
+    Args:
+        subsets: one of the following:
+            - A tuple of two set objects.
+            - A dict, providing relative sizes of the three diagram regions.
+              The regions are identified via two-letter binary codes ('10', '01', '11'), hence a valid artgument could look like:
+              {'01': 10, '11': 20}. Unmentioned codes are considered to map to 0.
+            - A tuple with 3 numbers, denoting the sizes of the regions in the following order:
+              (10, 01, 11).
+        set_labels: An optional tuple of two strings - set labels. Set it to None to disable set labels.
+        set_colors: A tuple of two color specifications, specifying the base colors of the two circles.
+            The colors of circle intersection will be computed based on those.
+        normalize_to: Deprecated. Use normalize_to argument of matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm instead.
+        ax: The axes to plot upon. Defaults to gca().
+        subset_label_formatter: A function that converts numeric subset sizes to strings to be shown on the subset patches in the diagram.
+            Defaults to "str".
+        layout_algorithm: The layout algorithm to determine the scale and position of the three circles. Defaults to
+            matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm().
 
-    The ``normalize_to`` parameter specifies the total (on-axes) area of the circles to be drawn. Sometimes tuning it (together
-    with the overall fiture size) may be useful to fit the text labels better.
-    The return value is a ``VennDiagram`` object, that keeps references to the ``Text`` and ``Patch`` objects used on the plot
-    and lets you know the centers and radii of the circles, if you need it.
-
-    The ``ax`` parameter specifies the axes on which the plot will be drawn (None means current axes).
-
-    The ``subset_label_formatter`` parameter is a function that can be passed to format the labels
-    that describe the size of each subset.
+    Returns:
+        a `VennDiagram` object that keeps references to the layout information, ``Text`` and ``Patch`` objects used on the plot.
 
     >>> from matplotlib_venn import *
     >>> v = venn2(subsets={'10': 1, '01': 1, '11': 1}, set_labels = ('A', 'B'))
@@ -217,42 +152,139 @@ def venn2(subsets, set_labels=('A', 'B'), set_colors=('r', 'g'), alpha=0.4, norm
     >>> c = venn2_circles(subsets=[set([1,2]), set([2,3,4,5])], linestyle='dashed')
     >>> print("%0.2f" % (v.get_circle_radius(1)/v.get_circle_radius(0)))
     1.41
-    '''
+    """
     if isinstance(subsets, dict):
-        subsets = [subsets.get(t, 0) for t in ['10', '01', '11']]
+        subsets = [subsets.get(t, 0) for t in ["10", "01", "11"]]
     elif len(subsets) == 2:
-        subsets = compute_venn2_subsets(*subsets)
+        subsets = _compute_subset_sizes(*subsets)
+    if normalize_to is not None:
+        if layout_algorithm is None:
+            warnings.warn(
+                "normalize_to is deprecated. Please use layout_algorithm=matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm(normalize_to) instead."
+            )
+        else:
+            raise ValueError(
+                "normalize_to is deprecated and may not be specified together with a custom layout algorithm."
+            )
+    if layout_algorithm is None:
+        layout_algorithm = DefaultLayoutAlgorithm(normalize_to=normalize_to or 1.0)
 
+    layout = layout_algorithm(subsets, set_labels)
+    return _render_layout(
+        layout, subsets, set_labels, set_colors, alpha, ax, subset_label_formatter
+    )
+
+
+def _render_layout(
+    layout: VennLayout,
+    subsets: Venn2SubsetSizes,
+    set_labels: Optional[Tuple[str, str]] = ("A", "B"),
+    set_colors: Tuple[Any, Any] = ("r", "g"),
+    alpha: float = 0.4,
+    ax: Optional[Axes] = None,
+    subset_label_formatter: Optional[Callable[[float], str]] = None,
+) -> VennDiagram:
+    """Renders the layout."""
     if subset_label_formatter is None:
         subset_label_formatter = str
-
-    areas = compute_venn2_areas(subsets, normalize_to)
-    centers, radii = solve_venn2_circles(areas)
-    regions = compute_venn2_regions(centers, radii)
-    colors = compute_venn2_colors(set_colors)
-
     if ax is None:
         ax = gca()
-    prepare_venn_axes(ax, centers, radii)
-
-    # Create and add patches and subset labels
+    prepare_venn_axes(ax, layout.centers, layout.radii)
+    colors = _compute_colors(*set_colors)
+    regions = _compute_regions(layout.centers, layout.radii)
     patches = [r.make_patch() for r in regions]
-    for (p, c) in zip(patches, colors):
+    for p, c in zip(patches, colors):
         if p is not None:
             p.set_facecolor(c)
-            p.set_edgecolor('none')
+            p.set_edgecolor("none")
             p.set_alpha(alpha)
             ax.add_patch(p)
     label_positions = [r.label_position() for r in regions]
-    subset_labels = [ax.text(lbl[0], lbl[1], subset_label_formatter(s), va='center', ha='center') if lbl is not None else None for (lbl, s) in zip(label_positions, subsets)]
-
-    # Position set labels
+    subset_labels = [
+        (
+            ax.text(lbl[0], lbl[1], subset_label_formatter(s), va="center", ha="center")
+            if lbl is not None
+            else None
+        )
+        for (lbl, s) in zip(label_positions, subsets)
+    ]
     if set_labels is not None:
-        padding = np.mean([r * 0.1 for r in radii])
-        label_positions = [centers[0] + np.array([0.0, - radii[0] - padding]),
-                           centers[1] + np.array([0.0, - radii[1] - padding])]
-        labels = [ax.text(pos[0], pos[1], txt, size='large', ha='right', va='top') for (pos, txt) in zip(label_positions, set_labels)]
-        labels[1].set_ha('left')
+        labels = [
+            ax.text(lbl.position.x, lbl.position.y, txt, size="large", **lbl.kwargs)
+            for (lbl, txt) in zip(layout.set_labels_layout, set_labels)
+        ]
     else:
         labels = None
-    return VennDiagram(patches, subset_labels, labels, centers, radii)
+    return VennDiagram(patches, subset_labels, labels, layout.centers, layout.radii)
+
+
+def _compute_regions(
+    centers: Tuple[Point2D, Point2D], radii: Tuple[float, float]
+) -> Tuple[VennRegion, VennRegion, VennRegion]:
+    """
+    Returns a triple of VennRegion objects, describing the three regions of the diagram, corresponding to sets
+    (Ab, aB, AB)
+
+    >>> layout = DefaultLayoutAlgorithm()((1, 1, 0.5))
+    >>> regions = _compute_regions(layout.centers, layout.radii)
+    """
+    A = VennCircleRegion(centers[0].asarray(), radii[0])
+    B = VennCircleRegion(centers[1].asarray(), radii[1])
+    Ab, AB = A.subtract_and_intersect_circle(B.center, B.radius)
+    aB, _ = B.subtract_and_intersect_circle(A.center, A.radius)
+    return (Ab, aB, AB)
+
+
+def _compute_colors(
+    color_a: Any, color_b: Any
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Given two base colors, computes combinations of colors corresponding to all regions of the venn diagram.
+    returns a list of 3 elements, providing colors for regions (10, 01, 11).
+
+    >>> str(_compute_colors('r', 'g')).replace(' ', '')
+    '(array([1.,0.,0.]),array([0.,0.5,0.]),array([0.7,0.35,0.]))'
+    """
+    ccv = ColorConverter()
+    base_colors = [np.array(ccv.to_rgb(c)) for c in [color_a, color_b]]
+    return (base_colors[0], base_colors[1], mix_colors(base_colors[0], base_colors[1]))
+
+
+def _compute_subset_sizes(
+    a: Union[set, Counter], b: Union[set, Counter]
+) -> Tuple[float, float, float]:
+    """
+    Given two set or Counter objects, computes the sizes of (a & ~b, b & ~a, a & b).
+    Returns the result as a tuple.
+
+    >>> _compute_subset_sizes(set([1,2,3,4]), set([2,3,4,5,6]))
+    (1, 2, 3)
+    >>> _compute_subset_sizes(Counter([1,2,3,4]), Counter([2,3,4,5,6]))
+    (1, 2, 3)
+    >>> _compute_subset_sizes(Counter([]), Counter([]))
+    (0, 0, 0)
+    >>> _compute_subset_sizes(set([]), set([]))
+    (0, 0, 0)
+    >>> _compute_subset_sizes(set([1]), set([]))
+    (1, 0, 0)
+    >>> _compute_subset_sizes(set([1]), set([1]))
+    (0, 0, 1)
+    >>> _compute_subset_sizes(Counter([1]), Counter([1]))
+    (0, 0, 1)
+    >>> _compute_subset_sizes(set([1,2]), set([1]))
+    (1, 0, 1)
+    >>> _compute_subset_sizes(Counter([1,1,2,2,2]), Counter([1,2,3,3]))
+    (3, 2, 2)
+    >>> _compute_subset_sizes(Counter([1,1,2]), Counter([1,2,2]))
+    (1, 1, 2)
+    >>> _compute_subset_sizes(Counter([1,1]), set([]))
+    Traceback (most recent call last):
+    ...
+    ValueError: Both arguments must be of the same type
+    """
+    if not (type(a) == type(b)):
+        raise ValueError("Both arguments must be of the same type")
+    set_size = (
+        len if type(a) != Counter else lambda x: sum(x.values())
+    )  # We cannot use len to compute the cardinality of a Counter
+    return (set_size(a - b), set_size(b - a), set_size(a & b))
