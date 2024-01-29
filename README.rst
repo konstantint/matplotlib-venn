@@ -122,9 +122,10 @@ three sets of objects::
 
 Questions
 ---------
-* If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_,
-chances are high you could get an answer from the maintainer of this package.
 
+* If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them 
+  `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_, chances are high you could get
+  an answer from the maintainer of this package.
 
 See also
 --------
