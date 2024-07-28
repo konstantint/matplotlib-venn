@@ -140,7 +140,7 @@ See also
 * The `matplotlib-subsets
   <https://pypi.python.org/pypi/matplotlib-subsets>`_ package
   visualizes a hierarchy of sets as a tree of rectangles.
-* The `matplotlib_set_diagrams <https://pypi.org/project/matplotlib-set-diagrams`_ package
+* The `matplotlib_set_diagrams <https://pypi.org/project/matplotlib-set-diagrams>`_ package
   is a GPL-licensed alternative that offers a different layout algorithm, which supports more than
   three sets and provides a cool ability to incorporate wordclouds into your Venn (Euler) diagrams.
 
