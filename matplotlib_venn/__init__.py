@@ -65,4 +65,4 @@ ___all___ = [
     "venn2_unweighted",
     "venn3_unweighted",
 ]
-__version__ = "1.0.0-alpha"
+__version__ = "1.0.0"

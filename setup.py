@@ -10,7 +10,7 @@ http://kt.era.ee/
 Licensed under MIT license.
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 from setuptools.command.test import test as TestCommand
 
 
@@ -47,7 +47,7 @@ setup(
     author_email="kt@umn.ee",
     url="https://github.com/konstantint/matplotlib-venn",
     license="MIT",
-    packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
+    packages=find_namespace_packages(include=["matplotlib_venn*"]),
     include_package_data=True,
     zip_safe=True,
     install_requires=["matplotlib", "numpy", "scipy"],
