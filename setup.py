@@ -51,6 +51,9 @@ setup(
     include_package_data=True,
     zip_safe=True,
     install_requires=["matplotlib", "numpy", "scipy"],
+    extras_require={
+        "shapely": ["shapely"],
+    },
     tests_require=["pytest"],
     cmdclass={"test": PyTest},
     entry_points="",

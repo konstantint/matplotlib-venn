@@ -4,8 +4,7 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-  # See https://github.com/konstantint/matplotlib-venn/issues/76
-  # - "3.8"
+  - "3.8"
   - "3.9"
   - "3.10"
   - "3.11"
@@ -15,7 +14,7 @@ install:
   - which python
   - python -m venv venv
   - source venv/bin/activate
-  - pip install -e .
+  - pip install -e ".[shapely]"
   - pip install pytest
 
 script:

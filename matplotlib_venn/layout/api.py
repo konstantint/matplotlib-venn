@@ -15,6 +15,9 @@ from matplotlib_venn._math import Point2D
 
 SubsetSizes = Sequence[float]  # .. of length 3 for venn2 and length 7 for venn3
 
+# Failures that may be reported from the layout algorithm.
+class LayoutException(Exception):
+    pass
 
 class LabelLayout:
     """Text label position in the diagram.

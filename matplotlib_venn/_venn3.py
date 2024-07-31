@@ -210,9 +210,9 @@ def _render_layout(
         intersections = [
             circle_circle_intersection(
                 layout.centers[i].asarray(),
-                layout.radii[i],
+                layout.radii[i] + 0.001,
                 layout.centers[j].asarray(),
-                layout.radii[j],
+                layout.radii[j] + 0.001,
             )
             for (i, j) in [(0, 1), (1, 2), (2, 0)]
         ]

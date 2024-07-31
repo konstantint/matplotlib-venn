@@ -14,12 +14,21 @@ Install the package as usual via ``pip``::
 
     $ python -m pip install matplotlib-venn
 
+Since version 1.1.0 the package includes an extra "cost based" layout algorithm for `venn3` diagrams,
+that relies on the `shapely` package, which is not installed as a default dependency. If you need the
+new algorithm (or just have nothing against installing `shapely` along the way), instead do::
+
+    $ python -m pip install "matplotlib-venn[shapely]"
+
+It is quite probable that `shapely` will become a required dependency eventually in one of the future versions.
+
 Dependencies
 ------------
 
 - ``numpy``,
 - ``scipy``,
-- ``matplotlib``.
+- ``matplotlib``,
+- ``shapely`` (optional).
 
 Usage
 -----
@@ -42,26 +51,16 @@ objects instead (new in version 0.7), e.g.::
 
 Similarly, the functions ``venn3`` and ``venn3_circles`` take a
 7-element tuple of subset sizes ``(Abc, aBc, ABc, abC, AbC, aBC,
-ABC)``, and draw a three-circle area-weighted venn
-diagram. Alternatively, a tuple of three ``set`` or ``Counter`` objects may be provided.
+ABC)``, and draw a three-circle area-weighted Venn
+diagram: 
+
+.. image:: https://user-images.githubusercontent.com/13646666/87874366-96924800-c9c9-11ea-8b06-ac1336506b59.png
+
+Alternatively, a tuple of three ``set`` or ``Counter`` objects may be provided.
 
 The functions ``venn2`` and ``venn3`` draw the diagrams as a collection of colored
 patches, annotated with text labels. The functions ``venn2_circles`` and
 ``venn3_circles`` draw just the circles.
-
-Sometimes the area weighing needs to be disabled or manually tuned to achieve a visually
-better result. This can be achieved as follows::
-
-    from matplotlib_venn.layout.venn2 import DefaultLayoutAlgorithm
-    venn2((1,2,3), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1)))
-
-    from matplotlib_venn.layout.venn3 import DefaultLayoutAlgorithm
-    venn3((7,6,5,4,3,2,1), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1,1,1,1,1)))
-
-Note that for a three-circle venn diagram it is not in general
-possible to achieve exact correspondence between the required set
-sizes and region areas, however in most cases the picture will still
-provide a useful representation.
 
 The functions ``venn2_circles`` and ``venn3_circles`` return the list of ``matplotlib.patch.Circle`` objects that may be tuned further
 to your liking. The functions ``venn2`` and ``venn3`` return an object of class ``VennDiagram``,
@@ -118,6 +117,58 @@ three sets of objects::
 
     venn3([set1, set2, set3], ('Set1', 'Set2', 'Set3'))
     plt.show()
+
+Tuning the diagram layout
+-------------------------
+
+Note that for a three-circle venn diagram it is not in general
+possible to achieve exact correspondence between the required set
+sizes and region areas. The default layout algorithm aims to correctly represent:
+
+  * Relative areas of the full individual sets (A, B, C).
+  * Relative areas of pairwise intersections of sets (A&B, A&C, B&C, not to be confused with the regions
+    A&B&~C, A&~B&C, ~A&B&C, on the diagram).
+
+Sometimes the result is unsatisfactory and either the area weighting or the layout logic needs
+to be tuned.
+
+The area weighing can be adjusted by providing a `fixed_subset_sizes` argument to the `DefaultLayoutAlgorithm`::
+
+    from matplotlib_venn.layout.venn2 import DefaultLayoutAlgorithm
+    venn2((1,2,3), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1)))
+
+    from matplotlib_venn.layout.venn3 import DefaultLayoutAlgorithm
+    venn3((7,6,5,4,3,2,1), layout_algorithm=DefaultLayoutAlgorithm(fixed_subset_sizes=(1,1,1,1,1,1,1)))
+
+In the above examples the diagram regions will be plotted as if `venn2((1,1,1))` and `venn3((1,1,1,1,1,1,1))` were
+invoked, yet the actual numbers will be `(1,2,3)` and `(7,6,5,4,3,2,1)` respectively.
+
+The diagram can be tuned further by switching the layout algorithm to a different implementation.
+At the moment the package offers an alternative layout algorithm for `venn3` diagrams that lays the circles out by
+optimizing a user-provided *cost function*. The following examples illustrate its usage::
+
+    from matplotlib_venn.layout.venn3 import cost_based
+    subset_sizes = (100,200,10000,10,20,3,1)
+    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm())
+
+    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(transform_fn=lambda x: x))
+    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+
+    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(weights=(0,0,0,1,1,1,1)))
+    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+
+The default "pairwise" algorithm is, theoretically, a special case of the cost-based method with the respective cost function::
+
+    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.pairwise_cost)
+    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+
+(The latter plot will be close, but not perfectly equal to the outcome of `DefaultLayoutAlgorithm()`).
+
+Note that the import::
+
+    from matplotlib_venn.layout.venn3 import cost_based
+
+will fail unless you have the optional `shapely` package installed (see "Installation" above).
 
 
 Questions

@@ -1,3 +1,14 @@
+Version 1.1.0
+--------------
+
+    - Implemented a cost-based layout algorithm (Issue #35).
+      The implementation depends on shapely, which is added as an optional
+      dependency (package needs to be installed as matplotlib-venn[shapely] for
+      it to be included).
+      Thanks to https://github.com/paulbrodersen
+    - Added a set diagram to the README (Issue #51).
+    - Fixed doctests that started failing due to different numpy versions representing values differently.
+
 Version 1.0.0
 --------------
 
@@ -6,7 +17,7 @@ Version 1.0.0
 Version 1.0.0-alpha
 --------------
 
-    - Dropped support for Python versions below 3.5 (by excluding those versions from CI builds)
+    - Dropped support for Python versions below 3.5 (by excluding those versions from CI builds).
     - Added typing annotations. Some arguments are now a bit more strictly typed.
       E.g. what previously would accept a List now requires (at least as far as type annotations are concerned) a tuple.
     - Refactored the code by abstracting away the layout algorithms to allow plug-in customization (Issue #35).
@@ -41,12 +52,12 @@ Version 0.11.6
 Version 0.11.5
 --------------
 
-    - Added subset_label_formatter parameter (PR#28)
+    - Added subset_label_formatter parameter (PR#28).
 
 Version 0.11.4
 --------------
 
-    - Added support for Counter objects (PR#26)
+    - Added support for Counter objects (PR#26).
     
 Version 0.11.3
 --------------
@@ -56,8 +67,8 @@ Version 0.11.3
 Version 0.11.2
 --------------
 
-    - Fixes issue #24
-    - Addresses Debian bug #813782
+    - Fixes issue #24.
+    - Addresses Debian bug #813782.
 
 Version 0.11
 ------------
@@ -85,9 +96,9 @@ Version 0.8
 Version 0.7
 -----------
 
-    - Added the possibility to provide sets (rather than subset sizes) to venn2 and venn3
+    - Added the possibility to provide sets (rather than subset sizes) to venn2 and venn3.
       Thanks to https://github.com/aebrahim
-    - Functions won't bail out on sets of size 0 now (the diagrams won't look pretty, though)
+    - Functions won't bail out on sets of size 0 now (the diagrams won't look pretty, though).
       Thanks to https://github.com/olgabot
     - Venn2/Venn3 objects now provide information about the coordinates and radii of the circles.
     - Utility functions added for drawing unweighed diagrams (venn2_unweighted, venn3_unweighted)
