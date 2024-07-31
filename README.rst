@@ -151,16 +151,16 @@ optimizing a user-provided *cost function*. The following examples illustrate it
     subset_sizes = (100,200,10000,10,20,3,1)
     venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm())
 
-    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(transform_fn=lambda x: x))
-    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+    alg = cost_based.LayoutAlgorithm(cost_fn=cost_based.WeightedAggregateCost(transform_fn=lambda x: x))
+    venn3(subset_sizes, layout_algorithm=alg)
 
-    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(weights=(0,0,0,1,1,1,1)))
-    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+    alg = cost_based.LayoutAlgorithm(cost_fn=cost_based.WeightedAggregateCost(weights=(0,0,0,1,1,1,1)))
+    venn3(subset_sizes, layout_algorithm=alg)
 
 The default "pairwise" algorithm is, theoretically, a special case of the cost-based method with the respective cost function::
 
-    opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.pairwise_cost)
-    venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
+    alg = cost_based.LayoutAlgorithm(cost_fn=cost_based.pairwise_cost)
+    venn3(subset_sizes, layout_algorithm=alg)
 
 (The latter plot will be close, but not perfectly equal to the outcome of `DefaultLayoutAlgorithm()`).
 

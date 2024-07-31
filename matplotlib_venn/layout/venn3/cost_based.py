@@ -18,44 +18,42 @@ does not work well enough for your data (which is usually the case for very skew
 
 In this case just try doing:
 
-```python
-from matplotlib_venn.layout.venn3 import cost_based
-from matplotlib_venn import venn3
-
-venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm())
-```
+>>> from matplotlib_venn.layout.venn3 import cost_based
+>>> from matplotlib_venn import venn3
+>>> subset_sizes = (100,200,10000,10,20,3,1)
+>>> venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm())
+<matplotlib_venn...VennDiagram object at ...>
 
 You may further tune the behaviour of the algorithm by redefining the cost function.
 By default the algorithm tries to optimize the sum of |log(1+target_size)-log(1+actual_size)|
 over all 7 regions. If for some reason you believe |target_size - actual_size| should work better
 for your case, you can achieve it as follows:
 
-```python
-opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(transform_fn=lambda x: x))
-venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
-```
+>>> alg = cost_based.LayoutAlgorithm(cost_fn=cost_based.WeightedAggregateCost(transform_fn=lambda x: x))
+>>> venn3(subset_sizes, layout_algorithm=alg)
+<matplotlib_venn...VennDiagram object at ...>
 
 Alternatively, you may want the optimization to give more weight to some of the regions or even ignore some of the
 larger ones.
 
-```python
-subset_sizes = (100,200,10000,10,20,3,1)
-opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.WeightedAggregateCost(weights=(0,0,0,1,1,1,1)))
-venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))
-```
+>>> alg = cost_based.LayoutAlgorithm(cost_fn=cost_based.WeightedAggregateCost(weights=(0,0,0,1,1,1,1)))
+>>> venn3(subset_sizes, layout_algorithm=alg)
+<matplotlib_venn...VennDiagram object at ...>
 
 In theory, if the cost is defined as a difference in sizes of "pairwise" regions (AB, BC, AC), the result of optimizing
 it should be equivalent to what the default ('pairwise') algorithm does. To play with this idea, the module defines the
 respective `pairwise_cost` function. The result is not exactly the same as that of the default algorithm, but it would
 nearly always succeed, even when the default algorithm sometimes fails. E.g.:
 
-```python
-subset_sizes = (1, 0, 0, 650, 0, 76, 13)
-venn3(subset_sizes)  # Fails
+>>> subset_sizes = (1, 0, 0, 650, 0, 76, 13)
+>>> # Fails
+>>> venn3(subset_sizes)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+matplotlib_venn._region.VennRegionException: Invalid configuration of circular regions (holes are not supported).
 
-opts = cost_based.LayoutAlgorithmOptions(cost_fn=cost_based.pairwise_cost)
-venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(opts))  # Succeeds, producing what the default algorithm should have produced
-```
+>>> # Succeeds, producing what the default algorithm should have produced
+>>> venn3(subset_sizes, layout_algorithm=cost_based.LayoutAlgorithm(cost_fn=cost_based.pairwise_cost))
+<matplotlib_venn...VennDiagram object at ...>
 
 NB: This implementation is still in "alpha" stage, the code and behaviour may change in backwards-incompatible ways.
 
@@ -250,25 +248,6 @@ def pairwise_cost(target_areas: SubsetSizes, actual_areas: SubsetSizes) -> float
     return float(abs(dAB) + abs(dBC) + abs(dAC))
 
 
-class LayoutAlgorithmOptions:
-    # The default cost function is a WeightedAggregateCost(lambda x: np.log(1+x))
-    # This seems to work reasonably well (as experimentally determined by Paul Brodersen).
-    def __init__(self, cost_fn: Optional[CostFunction] = None, fallback: bool = True):
-        """Initialize options for the cost-based layout algorithm.
-
-        Args:
-            cost_fn: A cost function to be optimized.
-                     Default is WeightedAggregateCost(lambda x: np.log(1 + x)).
-                     This has been determined to work well enough in practice.
-            fallback: Whether to fall back to the default ("pairwise") layout
-                     algorithm if optimization does not converge. True by default.
-                     If there is no fallback, a LayoutException will be raised if
-                     optimization fails.
-        """
-        self.cost_fn = cost_fn or WeightedAggregateCost(lambda x: np.log(1 + x))
-        self.fallback = fallback
-
-
 class LayoutAlgorithm(VennLayoutAlgorithm):
     """3-way Venn layout that positions circles by numerically optimizing a given discrepancy cost.
 
@@ -280,8 +259,20 @@ class LayoutAlgorithm(VennLayoutAlgorithm):
     [0.42..., 0.42..., 0.42...]
     """
 
-    def __init__(self, options: Optional[LayoutAlgorithmOptions] = None):
-        self._options = options or LayoutAlgorithmOptions()
+    def __init__(self, cost_fn: Optional[CostFunction] = None, fallback: bool = True):
+        """Initialize the cost-based layout algorithm.
+
+        Args:
+            cost_fn: A cost function to be optimized.
+                     Default is WeightedAggregateCost(lambda x: np.log(1 + x)).
+                     This has been determined to work well enough in practice.
+            fallback: Whether to fall back to the default ("pairwise") layout
+                     algorithm if optimization does not converge. True by default.
+                     If there is no fallback, a LayoutException will be raised if
+                     optimization fails.
+        """
+        self._cost_fn = cost_fn or WeightedAggregateCost(lambda x: np.log(1 + x))
+        self._fallback = fallback
         # This is a convenience field that will carry the result of the most
         # recent "minimize" call.
         self.last_optimization_result = None
@@ -301,7 +292,7 @@ class LayoutAlgorithm(VennLayoutAlgorithm):
             current_areas = _compute_subset_areas(
                 centers_flattened.reshape(-1, 2), radii
             )
-            return self._options.cost_fn(target_areas, current_areas)
+            return self._cost_fn(target_areas, current_areas)
 
         # ... while making sure the pairwise distances between circles do not exceed sum of radii:
         # (this is the order in which pdist computes pairwise distances).
@@ -331,7 +322,7 @@ class LayoutAlgorithm(VennLayoutAlgorithm):
 
         if not result.success:
             warnings.warn("Optimization failed: {0}".format(result.message))
-            if self._options.fallback:
+            if self._fallback:
                 # Fall back to _pairwise
                 return pairwise.LayoutAlgorithm()(subsets, set_labels)
             else:
