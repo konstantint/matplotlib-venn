@@ -10,6 +10,7 @@ Licensed under MIT license.
 
 from typing import Optional, Sequence, Union
 from scipy.optimize import brentq
+import math
 import numpy as np
 
 
@@ -59,7 +60,7 @@ def point_in_circle(
     False
     """
     d = np.linalg.norm(np.asarray(pt) - np.asarray(center))
-    return d <= radius
+    return bool(d <= radius)
 
 
 def box_product(v1: Point2DInternal, v2: Point2DInternal) -> float:
@@ -88,23 +89,22 @@ def circle_intersection_area(r: float, R: float, d: float) -> float:
     >>> circle_intersection_area(1.0, 1.0, 1.0)
     1.2283...
     """
-    if np.abs(d) < NUMERIC_TOLERANCE:
-        minR = np.min([r, R])
+    if abs(d) < NUMERIC_TOLERANCE:
+        minR = min(r, R)
         return np.pi * minR**2
-    if np.abs(r - 0) < NUMERIC_TOLERANCE or np.abs(R - 0) < NUMERIC_TOLERANCE:
+    if abs(r - 0) < NUMERIC_TOLERANCE or abs(R - 0) < NUMERIC_TOLERANCE:
         return 0.0
     d2, r2, R2 = float(d**2), float(r**2), float(R**2)
     arg = (d2 + r2 - R2) / 2 / d / r
-    arg = np.max(
-        [np.min([arg, 1.0]), -1.0]
-    )  # Even with valid arguments, the above computation may result in things like -1.001
-    A = r2 * np.arccos(arg)
+    # Even with valid arguments, the above computation may result in things like -1.001
+    arg = max(min(arg, 1.0), -1.0)
+    A = r2 * math.acos(arg)
     arg = (d2 + R2 - r2) / 2 / d / R
-    arg = np.max([np.min([arg, 1.0]), -1.0])
-    B = R2 * np.arccos(arg)
+    arg = max(min(arg, 1.0), -1.0)
+    B = R2 * math.acos(arg)
     arg = (-d + r + R) * (d + r - R) * (d - r + R) * (d + r + R)
-    arg = np.max([arg, 0])
-    C = -0.5 * np.sqrt(arg)
+    arg = max(arg, 0)
+    C = -0.5 * math.sqrt(arg)
     return A + B + C
 
 
@@ -131,8 +131,8 @@ def circle_line_intersection(
     disc = B**2 - 4 * A * C
     if disc < 0.0:
         return None
-    t1 = (-B + np.sqrt(disc)) / 2.0 / A
-    t2 = (-B - np.sqrt(disc)) / 2.0 / A
+    t1 = (-B + math.sqrt(disc)) / 2.0 / A
+    t2 = (-B - math.sqrt(disc)) / 2.0 / A
     return np.array([a + t1 * s, a + t2 * s])
 
 
@@ -160,10 +160,10 @@ def find_distance_by_area(
     """
     if r > R:
         r, R = R, r
-    if np.abs(a) < NUMERIC_TOLERANCE:
+    if abs(a) < NUMERIC_TOLERANCE:
         return float(r + R)
-    if np.abs(min([r, R]) ** 2 * np.pi - a) < NUMERIC_TOLERANCE:
-        return np.abs(R - r + numeric_correction)
+    if abs(min(r, R) ** 2 * np.pi - a) < NUMERIC_TOLERANCE:
+        return abs(R - r + numeric_correction)
     return brentq(lambda x: circle_intersection_area(r, R, x) - a, R - r, R + r)
 
 
@@ -211,7 +211,7 @@ def circle_circle_intersection(
     if cos_gamma < -1.0:
         cos_gamma = -1.0
 
-    sin_gamma = np.sqrt(1 - cos_gamma**2)
+    sin_gamma = math.sqrt(1 - cos_gamma**2)
     u = v_ab / d_ab
     v = np.array([-u[1], u[0]])
     pt1 = C_a + r_a * cos_gamma * u - r_a * sin_gamma * v
@@ -240,7 +240,7 @@ def vector_angle_in_degrees(v: Point2DInternal) -> float:
     >>> vector_angle_in_degrees([1, -1])
     -45.0
     """
-    return np.arctan2(v[1], v[0]) * 180 / np.pi
+    return math.atan2(v[1], v[0]) * 180 / np.pi
 
 
 def normalize_by_center_of_mass(coords: np.ndarray, radii: np.ndarray) -> np.ndarray:
@@ -264,4 +264,4 @@ def normalize_by_center_of_mass(coords: np.ndarray, radii: np.ndarray) -> np.nda
     if sum_r < NUMERIC_TOLERANCE:
         return coords
     else:
-        return coords - np.dot(radii, coords) / np.sum(radii)
+        return coords - np.dot(radii, coords) / sum_r

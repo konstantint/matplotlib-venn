@@ -79,12 +79,12 @@ def _compute_areas(
     # Normalize input values to sum to 1
     areas = np.array(np.abs(subset_sizes), float)
     total_area = np.sum(areas)
-    if np.abs(total_area) < NUMERIC_TOLERANCE:
+    if abs(total_area) < NUMERIC_TOLERANCE:
         warnings.warn("Both circles have zero area")
         return (1e-06, 1e-06, 0.0)
     else:
         areas = areas / total_area * normalize_to
-        return (areas[0] + areas[2], areas[1] + areas[2], areas[2])
+        return (float(areas[0] + areas[2]), float(areas[1] + areas[2]), float(areas[2]))
 
 
 def _compute_layout(venn_areas: VennAreas) -> VennLayout:

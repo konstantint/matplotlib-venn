@@ -93,7 +93,7 @@ def _compute_areas(
     # Normalize input values to sum to 1
     areas = np.array(np.abs(subset_sizes), float)
     total_area = np.sum(areas)
-    if np.abs(total_area) < _minimal_area:
+    if abs(total_area) < _minimal_area:
         warnings.warn("All circles have zero area.")
         return (1e-06, 1e-06, 1e-06, 0.0, 0.0, 0.0, 0.0)
     else:
@@ -114,7 +114,7 @@ def _compute_areas(
         # Areas of the three intersections (ab, ac, bc)
         A_ab, A_ac, A_bc = areas[2] + areas[6], areas[4] + areas[6], areas[5] + areas[6]
 
-        return (A_a, A_b, A_c, A_ab, A_bc, A_ac, areas[6])
+        return tuple(map(float, (A_a, A_b, A_c, A_ab, A_bc, A_ac, areas[6])))
 
 
 def _compute_layout(venn_areas: VennAreas) -> VennLayout:

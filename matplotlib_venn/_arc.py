@@ -10,6 +10,7 @@ Licensed under MIT license.
 """
 
 from typing import Optional, Sequence
+import math
 import numpy as np
 from matplotlib_venn._math import (
     NUMERIC_TOLERANCE,
@@ -165,7 +166,7 @@ class Arc:
         3.1415...
         """
         theta = self.length_radians()
-        return self.radius**2 / 2 * (theta - np.sin(theta))
+        return self.radius**2 / 2 * (theta - math.sin(theta))
 
     def angle_as_point(self, angle: float) -> np.ndarray:
         """
@@ -177,11 +178,11 @@ class Arc:
         >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(90).tolist()
         [1.0, 2.0]
         >>> np.all(np.isclose(Arc((1, 1), 1, 0, 0, True).angle_as_point(-270), [1.0, 2.0]))
-        True
+        np.True_
         """
         angle_rad = angle * np.pi / 180.0
         return self.center + self.radius * np.array(
-            [np.cos(angle_rad), np.sin(angle_rad)]
+            [math.cos(angle_rad), math.sin(angle_rad)]
         )
 
     def start_point(self) -> np.ndarray:
@@ -200,7 +201,7 @@ class Arc:
         Returns a 2x1 numpy array with the coordinates of the arc's end point.
 
         >>> np.all(Arc((0, 0), 1, 0, 90, True).end_point() - np.array([0, 1]) < NUMERIC_TOLERANCE)
-        True
+        np.True_
         """
         return self.angle_as_point(self.to_angle)
 
@@ -225,7 +226,7 @@ class Arc:
         >>> Arc((0, 0), 10, 20, 30, True).approximately_equal(Arc((0, 0+tol), 10, 20, 30, True))
         False
         """
-        return (
+        return bool(
             self.direction == arc.direction
             and np.all(abs(self.center - arc.center) < tolerance)
             and abs(self.radius - arc.radius) < tolerance
@@ -455,11 +456,11 @@ class Arc:
         Either p_from or p_to may be None to denote first or last arc endpoints.
 
         >>> a = Arc((0, 0), 1, 0, 90, True)
-        >>> a.subarc_between_points((1, 0), (np.cos(np.pi/4), np.sin(np.pi/4)))
+        >>> a.subarc_between_points((1, 0), (math.cos(np.pi/4), math.sin(np.pi/4)))
         Arc([0.000, 0.000], 1.000,   0.000, 45.000,   True,   degrees=45.000)
         >>> a.subarc_between_points(None, None)
         Arc([0.000, 0.000], 1.000,   0.000, 90.000,   True,   degrees=90.000)
-        >>> a.subarc_between_points((np.cos(np.pi/4), np.sin(np.pi/4)))
+        >>> a.subarc_between_points((math.cos(np.pi/4), math.sin(np.pi/4)))
         Arc([0.000, 0.000], 1.000,   45.000, 90.000,   True,   degrees=45.000)
         """
         a_from = self.point_as_angle(p_from) if p_from is not None else None
@@ -505,7 +506,7 @@ class Arc:
         """
         a = angle + self.sign * 90
         a = a * np.pi / 180.0
-        return np.array([np.cos(a), np.sin(a)])
+        return np.array([math.cos(a), math.sin(a)])
 
     def fix_360_to_0(self) -> None:
         """
