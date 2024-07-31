@@ -177,8 +177,8 @@ class Arc:
         [2.0, 1.0]
         >>> Arc((1, 1), 1, 0, 0, True).angle_as_point(90).tolist()
         [1.0, 2.0]
-        >>> np.all(np.isclose(Arc((1, 1), 1, 0, 0, True).angle_as_point(-270), [1.0, 2.0]))
-        np.True_
+        >>> bool(np.all(np.isclose(Arc((1, 1), 1, 0, 0, True).angle_as_point(-270), [1.0, 2.0])))
+        True
         """
         angle_rad = angle * np.pi / 180.0
         return self.center + self.radius * np.array(
@@ -200,8 +200,8 @@ class Arc:
         """
         Returns a 2x1 numpy array with the coordinates of the arc's end point.
 
-        >>> np.all(Arc((0, 0), 1, 0, 90, True).end_point() - np.array([0, 1]) < NUMERIC_TOLERANCE)
-        np.True_
+        >>> bool(np.all(Arc((0, 0), 1, 0, 90, True).end_point() - np.array([0, 1]) < NUMERIC_TOLERANCE))
+        True
         """
         return self.angle_as_point(self.to_angle)
 
