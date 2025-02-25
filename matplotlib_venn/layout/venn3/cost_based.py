@@ -253,10 +253,13 @@ class LayoutAlgorithm(VennLayoutAlgorithm):
 
     >>> alg = LayoutAlgorithm()
     >>> layout = alg((1,1,1,1,1,1,1), ("A", "B", "C"))
-    >>> layout.centers
-    [Point2D(-0.13..., 0.07...), Point2D(0.13..., 0.077...), Point2D(-1..., -0.15...)]
     >>> layout.radii
     [0.42..., 0.42..., 0.42...]
+    >>> np.allclose(\
+          np.asarray([c.asarray() for c in layout.centers]),\
+          np.asarray([[-0.134, 0.077], [0.134, 0.077], [0, -0.154]]), atol=0.001\
+        )
+    True
     """
 
     def __init__(self, cost_fn: Optional[CostFunction] = None, fallback: bool = True):
