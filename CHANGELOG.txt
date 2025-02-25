@@ -1,6 +1,7 @@
 Version 1.1.2
 -------------
     - Fixed floating-point comparison in a doctest (Issue #85)
+    - Fixed IPynb-based tests to comply with the new locals() semantics in Python 3.13 (Issue #86)
 
 Version 1.1.1
 --------------

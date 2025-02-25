@@ -87,10 +87,11 @@ def verify_diagram(
 def exec_ipynb(filename: str) -> None:
     """Executes all cells in a given ipython notebook consequentially."""
     s = json.load(open(filename))
+    locals_dict = locals()
     for cell in s["cells"]:
         if cell["cell_type"] == "code":
             code = "".join(cell["source"])
-            exec(code, locals())
+            exec(code, locals_dict)
 
             # Explicitly close any figures created by this cell, which
             # would normally (in a notebook) be done by the
