@@ -122,7 +122,7 @@ def venn2(
         subsets: one of the following:
             - A tuple of two set objects.
             - A dict, providing relative sizes of the three diagram regions.
-              The regions are identified via two-letter binary codes ('10', '01', '11'), hence a valid artgument could look like:
+              The regions are identified via two-letter binary codes ('10', '01', '11'), hence a valid argument could look like:
               {'01': 10, '11': 20}. Unmentioned codes are considered to map to 0.
             - A tuple with 3 numbers, denoting the sizes of the regions in the following order:
               (10, 01, 11).

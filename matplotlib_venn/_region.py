@@ -319,7 +319,7 @@ class VennArcgonRegion(VennRegion):
                     and (j - i) % len(self.arcs) > 1
                 ):
                     # Two non-consecutive arcs intersect. This is in general not good, but
-                    # may occasionally happen when all arcs inbetween have length 0.
+                    # may occasionally happen when all arcs in between have length 0.
                     pass  # raise VennRegionException("Non-consecutive arcs of a poly-arc-gon may not intersect")
 
         # Verify that vertices are ordered so that at each point the direction along the polyarc changes towards the left.
@@ -414,7 +414,7 @@ class VennArcgonRegion(VennRegion):
         #       b) Both arcs, X and Y, have one intersection point each. In this case one of the arc endpoints must be inside circle, another outside.
         #          call the arc that starts with the outside point X, the other arc Y.
         #           result_subtraction = {X start to intersection, intersection to intersection along circle (negative direction), Y from intersection to end}
-        #           result_intersection = {X intersection to end, Y start to intersecton, intersection to intersecion along circle (positive)}
+        #           result_intersection = {X intersection to end, Y start to intersection, intersection to intersection along circle (positive)}
         center = np.asarray(center)
         intersections = [a.intersect_circle(center, radius) for a in self.arcs]
 
@@ -558,7 +558,7 @@ class VennArcgonRegion(VennRegion):
                 return (subtraction, intersection)
 
     def label_position(self) -> np.ndarray:
-        # Position the label right inbetween the midpoints of the arcs
+        # Position the label right in between the midpoints of the arcs
         midpoints = [a.mid_point() for a in self.arcs]
         # For two-arc regions take the usual average
         # For more than two arcs, use arc lengths as the weights.

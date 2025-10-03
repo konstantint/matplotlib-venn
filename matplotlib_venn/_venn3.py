@@ -119,7 +119,7 @@ def venn3(
         subsets: one of the following:
             - A tuple of three set objects.
             - A dict, providing relative sizes of the seven diagram regions.
-              The regions are identified via three-letter binary codes ('100', '010', etc), hence a valid artgument could look like:
+              The regions are identified via three-letter binary codes ('100', '010', etc), hence a valid argument could look like:
               {'001': 10, '010': 20, '110':30, ...}. Unmentioned codes are considered to map to 0.
             - A tuple with 7 numbers, denoting the sizes of the regions in the following order:
               (100, 010, 110, 001, 101, 011, 111).

@@ -301,7 +301,7 @@ class Arc:
     ) -> Sequence[np.ndarray]:
         """
         Given a circle, finds the intersection point(s) of the arc with the circle.
-        Returns a list of 2x1 numpy arrays. The list has length 0, 1 or 2, depending on how many intesection points there are.
+        Returns a list of 2x1 numpy arrays. The list has length 0, 1 or 2, depending on how many intersection points there are.
         If the circle touches the arc, it is reported as two intersection points (which are equal).
         Points are ordered along the arc.
         Intersection with the same circle as the arc's own (which means infinitely many points usually) is reported as no intersection at all.
@@ -370,7 +370,7 @@ class Arc:
     def intersect_arc(self, arc: "Arc") -> Sequence[np.ndarray]:
         """
         Given an arc, finds the intersection point(s) of this arc with that.
-        Returns a list of 2x1 numpy arrays. The list has length 0, 1 or 2, depending on how many intesection points there are.
+        Returns a list of 2x1 numpy arrays. The list has length 0, 1 or 2, depending on how many intersection points there are.
         Points are ordered along the arc.
         Intersection with the arc along the same circle (which means infinitely many points usually) is reported as no intersection at all.
 
