@@ -53,6 +53,7 @@ setup(
     install_requires=["matplotlib", "numpy", "scipy"],
     extras_require={
         "shapely": ["shapely"],
+        "seaborn": ["seaborn"],
     },
     tests_require=["pytest"],
     cmdclass={"test": PyTest},

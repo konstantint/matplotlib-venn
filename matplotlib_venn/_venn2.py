@@ -16,7 +16,7 @@ if "py.test" in os.path.basename(sys.argv[0]):  # (XXX: Ugly hack)
 
     matplotlib.use("Agg")
 
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 import numpy as np
 import warnings
 from collections import Counter
@@ -40,7 +40,7 @@ def venn2_circles(
     normalize_to: Optional[float] = None,
     alpha: float = 1.0,
     color: Any = "black",
-    palette: Optional[Any] = None,
+    palette: Optional[Union[str, Sequence]] = None,
     linestyle: str = "solid",
     linewidth: float = 2.0,
     ax: Axes = None,
@@ -56,6 +56,9 @@ def venn2_circles(
         normalize_to: Same as in `venn2`.
         alpha: The alpha parameter of the circle patches.
         color: The edgecolor of the circle patches (as understood by matplotlib).
+        palette: An optional palette for circle edge colors. Can be a string
+            (seaborn palette name, requires seaborn) or a sequence of colors.
+            When specified, the ``color`` parameter is ignored.
         linestyle: The linestyle of the circle patches.
         linewidth: The line width of the circle patches.
         ax: Axis to draw upon, defaults to gca().
@@ -89,13 +92,20 @@ def venn2_circles(
     if palette is not None:
         if color != "black":
             warnings.warn(
-                "Both palette and color specified. color will be ignored in favor of palette."
+                "Both palette and color were specified. color will be ignored in favor of palette."
             )
         if isinstance(palette, str):
-            import seaborn as sns
+            try:
+                import seaborn as sns
+            except ImportError:
+                raise ImportError(
+                    "The 'seaborn' package is required when passing a string palette name. "
+                    "Install it with: pip install seaborn"
+                )
             colors = sns.color_palette(palette, 2)
         else:
-            assert len(palette) >= 2, "Palette must provide at least two colors (only the first two will be used)."
+            if len(palette) < 2:
+                raise ValueError("palette must contain at least 2 colors.")
             colors = palette[:2]
     else:
         colors = [color, color]
@@ -105,12 +115,12 @@ def venn2_circles(
         ax = gca()
     prepare_venn_axes(ax, layout.centers, layout.radii)
     result = []
-    for c, r, color in zip(layout.centers, layout.radii, colors):
+    for c, r, clr in zip(layout.centers, layout.radii, colors):
         circle = Circle(
             c.asarray(),
             r,
             alpha=alpha,
-            edgecolor=color,
+            edgecolor=clr,
             facecolor="none",
             linestyle=linestyle,
             linewidth=linewidth,
@@ -130,6 +140,8 @@ def venn2(
     ax: Optional[Axes] = None,
     subset_label_formatter: Optional[Callable[[float], str]] = None,
     layout_algorithm: Optional[VennLayoutAlgorithm] = None,
+    filled: bool = True,
+    circle_colors: Optional[Union[str, Sequence]] = None,
 ):
     """Plots a 2-set area-weighted Venn diagram.
 
@@ -150,6 +162,12 @@ def venn2(
             Defaults to "str".
         layout_algorithm: The layout algorithm to determine the scale and position of the three circles. Defaults to
             matplotlib_venn.layout.venn2.DefaultLayoutAlgorithm().
+        filled: If False, region patches are made fully transparent. Useful for "circle-only"
+            diagrams when combined with ``circle_colors``. Default: True.
+        circle_colors: Optional palette for drawing colored circle outlines on top of the diagram.
+            Accepts the same values as the ``palette`` parameter of ``venn2_circles``:
+            a string (seaborn palette name, requires seaborn) or a sequence of colors.
+            When specified, circles are automatically drawn. Default: None.
 
     Returns:
         a `VennDiagram` object that keeps references to the layout information, ``Text`` and ``Patch`` objects used on the plot.
@@ -185,9 +203,24 @@ def venn2(
         layout_algorithm = DefaultLayoutAlgorithm(normalize_to=normalize_to or 1.0)
 
     layout = layout_algorithm(subsets, set_labels)
-    return _render_layout(
+    result = _render_layout(
         layout, subsets, set_labels, set_colors, alpha, ax, subset_label_formatter
     )
+
+    if not filled:
+        for patch in result.patches:
+            if patch is not None:
+                patch.set_alpha(0)
+
+    if circle_colors is not None:
+        venn2_circles(
+            subsets,
+            palette=circle_colors,
+            ax=ax or gca(),
+            layout_algorithm=layout_algorithm,
+        )
+
+    return result
 
 
 def _render_layout(
