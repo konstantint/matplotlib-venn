@@ -177,21 +177,14 @@ Questions
 * If you ask your questions at `StackOverflow <http://stackoverflow.com/>`_ and tag them 
   `matplotlib-venn <http://stackoverflow.com/questions/tagged/matplotlib-venn>`_, chances are high you could get
   an answer from the maintainer of this package.
-
-See also
---------
-
 * Report issues and submit fixes at Github:
   https://github.com/konstantint/matplotlib-venn
   
   Check out the ``DEVELOPER-README.rst`` for development-related notes.
-* Some alternative means of plotting a Venn diagram (as of
-  October 2012) are reviewed in the blog post:
-  http://fouryears.eu/2012/10/13/venn-diagrams-in-python/
-* The `matplotlib-subsets
-  <https://pypi.python.org/pypi/matplotlib-subsets>`_ package
-  visualizes a hierarchy of sets as a tree of rectangles.
-* The `matplotlib_set_diagrams <https://pypi.org/project/matplotlib-set-diagrams>`_ package
-  is a GPL-licensed alternative that offers a different layout algorithm, which supports more than
-  three sets and provides a cool ability to incorporate wordclouds into your Venn (Euler) diagrams.
+
+See also
+--------
+
+* [Eunoia](https://jolars.github.io/eunoia-py/) is another great package for plotting Venn-style diagrams, which offers a wider variety of shapes besides just circles.
+  Check out [this page](https://jolars.github.io/eunoia-py/comparison.html) from its docs for a list of a few other currently (as of 2026) available alternatives.
 
